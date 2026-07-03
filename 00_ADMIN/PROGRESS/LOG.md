@@ -2,6 +2,13 @@
 _Living record. Newest entries at top. A fresh chat + this log ≈ full context._
 
 ---
+## 2026-07-04 — Session 5 (delegation + QGIS update)
+
+- **Carlton delegated sections §3, §4, §5** (analysis-map production) → `00_ADMIN/CARLTON_HANDOFF.md`. Claude delivers analytical layers+styles; Carlton composes/styles/exports.
+- Sonya updating QGIS to newest version. Post-update checklist: re-point **WhiteboxTools** exe; confirm plugins (SIGPAC Downloader, QuickOSM, QuickMapServices, LiDAR Height Extractor, **save-reminder plugin**) enabled; GRASS provider on; QuickMapServices basemaps; default CRS 25830 + relative paths. Preserve the **save-reminder plugin** (name TBC from Sonya).
+- SIGPAC (plugin, by name) saved to `LANDSCAPE/downloads/` as gpkg — **Huesca complete, Zaragoza stopped ~94%** (re-run Zaragoza). Data stays in LANDSCAPE working folder; repo tracks docs/scripts/.qgz only (heavy geodata git-ignored).
+
+---
 ## 2026-07-04 — Session 4 (data acquisition method + clean project + GitHub)
 
 ### Resolved

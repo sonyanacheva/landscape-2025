@@ -1,0 +1,17 @@
+# Heavy geodata & outputs — not versioned (public downloads / synced separately)
+01_DATA/
+03_PROCESSED/
+04_EXPORTS/
+05_FIGMA_ASSEMBLY/
+06_DELIVERABLES/
+99_ARCHIVE_OLD/
+
+# QGIS temp / backups
+*.qgz~
+*.qgd
+*.qgs~
+*~
+
+# OS
+.DS_Store
+Thumbs.db

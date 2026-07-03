@@ -17,6 +17,11 @@ _Our contract for this sprint. Read me first each session._
 | Writing: memory text, narrative, planting calendar, legends | **Claude** |
 | Verification / fact-check pass | **Claude**, you confirm |
 
+## Version control — always GitHub Desktop
+- Claude may **create, update, and delete** files directly in the repo folder.
+- **Never give Sonya git CLI commands.** For commit / push / pull / sync she uses **GitHub Desktop**.
+- Repo: `sonyanacheva/landscape-2025`. Heavy geodata stays git-ignored.
+
 ## Managing my context limit (important)
 I degrade when a single conversation gets very long. Antidote:
 1. **One block per session.** We work a block (see budget), then checkpoint.

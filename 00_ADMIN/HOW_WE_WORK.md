@@ -11,11 +11,17 @@ _Our contract for this sprint. Read me first each session._
 |---|---|
 | Download data from portals (browser) | **Carlton** (I can't reach gov portals; can drive Chrome if connected) |
 | Audit data, read real attribute codes, build reclass tables | **Claude** (headless GDAL/Python here) |
-| Clip / reproject / reclassify / compute hectares / erosion / flow | **Claude** (headless — hand you finished layers) |
+| Clip / reproject / reclassify / ha / flow / erosion | **Claude writes a PyQGIS script → Sonya runs it in QGIS** (data stays off Claude's context = credit-safe) |
 | PyQGIS scripts, styles (.qml), layouts (.qpt), Atlas | **Claude** writes → **Carlton** runs in QGIS |
 | Final styling, panel assembly (Figma), print export | **Carlton** (I stage assets + give exact settings) |
 | Writing: memory text, narrative, planting calendar, legends | **Claude** |
 | Verification / fact-check pass | **Claude**, you confirm |
+
+## GIS = PyQGIS scripts only (credit-safe) · maps from scratch
+- **All GIS processing and map-making goes through PyQGIS scripts that Sonya runs in QGIS.** Claude no longer runs headless geoprocessing on the synced folder (it corrupts large files and bills heavy data into Claude's context).
+- Claude writes each script (merge / clip / reproject / reclassify / ha / style / group / layout); Sonya runs it; only short results or a small traceback come back.
+- **Credit-safe mode:** one fresh, focused chat per map/block; never dump large outputs; the LOG is the compact carry-over. This mega-thread is the anomaly.
+- **We build the new maps FROM SCRATCH** — new data (SIGPAC 2026, MFE, DEM 5 m, OSM, cañadas) + fresh scripts + fresh styling + fresh layouts. Old CORINE-based maps are replaced, not reused.
 
 ## Version control — always GitHub Desktop
 - Claude may **create, update, and delete** files directly in the repo folder.

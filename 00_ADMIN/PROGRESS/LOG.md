@@ -2,6 +2,23 @@
 _Living record. Newest entries at top. A fresh chat + this log ≈ full context._
 
 ---
+## 2026-07-04 — Session 7 (strategy: PyQGIS-only + from scratch)
+
+- **Strategy change (Sonya):** from now on **GIS = PyQGIS scripts Sonya runs in QGIS only** — no headless geoprocessing by Claude (credit-safe: keeps heavy data + errors off Claude's context). Updated HOW_WE_WORK, PROJECT_HUB, DELIVERABLES_CHECKLIST.
+- **Credit note:** hit 90% usage — cause = this one huge thread (screenshots/PDFs + a 169k-char output dump), not the map. Fix: fresh chat per map/block, no big outputs.
+- **Maps built FROM SCRATCH** with new data + fresh scripts/styling/layouts.
+- ⚠️ **Verify 4.5 pastures:** PA/PR/PS all mapped to 'Pasture' (31,386 ha); PR (pasto arbustivo) may belong in Scrub. Next chat: show raw uso_sigpac ha breakdown, let Sonya/teacher set the pasture↔scrub boundary. No re-crunch needed.
+
+---
+## 2026-07-04 — Session 6 (4.5 processed + hybrid workflow)
+
+- **Map 4.5 DONE (data):** `03_PROCESSED/agri_matrix_45.gpkg` — 305,204 SIGPAC parcels, box-clipped, EPSG:25830, reclassified `agri_class` + `ha`. Legend (ha): Arable dryland 119,374 · Arable irrigated 97,754 · Scrub 49,229 · Non-agri 31,574 · Pasture 31,386 · Woody 27,093 · Forest 26,721 · Horticulture 172. (Whole parcels touching frame → totals slightly exceed box; precise-clip optional.)
+- Styling script: `07_SCRIPTS/02_style_agri_matrix_45.py` (Sonya runs in QGIS).
+- **Workflow decided (hybrid):** Claude does heavy geoprocessing headless → hands finished layer; Sonya runs PyQGIS scripts for load/group/style/layout. Her instinct confirmed.
+- **Tech notes for next runs:** SIGPAC plugin gpkgs are **EPSG:4258**, layer name `recinto`, irrigation field `coef_regadio`, folder `LANDSCAPE/downloads/`. **Large GeoPackages corrupt on the synced mount** (both direct write AND cp of a 341 MB gpkg failed). **Use FlatGeobuf `.fgb`** for outputs to the mount (110 MB copied intact). Layer name inside = `agri`. 4.5 layer = `03_PROCESSED/agri_matrix_45.fgb`, simplified 3 m. uso reclass table in script.
+- **Pending downloads:** DEM 5m (WCS export not done), OSM (script not run), MFE-Zaragoza (only Huesca have).
+- **NEXT:** 4.6 forest/scrub from MFE; flow/erosion once DEM tif exported; then per-map PyQGIS style+group scripts + layouts (panel + A3).
+---
 ## 2026-07-04 — Session 5 (delegation + QGIS update)
 
 - **Carlton delegated sections §3, §4, §5** (analysis-map production) → `00_ADMIN/CARLTON_HANDOFF.md`. Claude delivers analytical layers+styles; Carlton composes/styles/exports.

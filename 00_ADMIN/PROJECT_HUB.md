@@ -2,12 +2,14 @@
 ### Candasnos · Barranco de Valcuerna · Los Monegros · reference species: Iberian lynx (lens)
 **This is the single reference file. I keep it rewritten so you never scroll the chat.** CRS everywhere: **EPSG:25830**. Study box: 714913,4582331 → 784950,4639785.
 
+> **GIS = PyQGIS only.** All processing + mapping happens through PyQGIS scripts Sonya runs in QGIS (credit-safe: heavy data stays off Claude's context). **We build the new maps FROM SCRATCH** — new data + fresh scripts, styling and layouts; old CORINE maps are replaced, not reused.
+
 ---
 ## HOW WE GET DATA — order of preference
 1. **[HAVE]** already in your files → I just clip/restyle.
 2. **[PLUGIN]** a QGIS plugin does it → fastest, no manual tiles.
 3. **[WMS/WCS]** pull from a server for the box in one go.
-4. **[SCRIPT]** I derive it headlessly (Python/GRASS/Whitebox) and hand you the layer.
+4. **[PyQGIS SCRIPT]** Claude writes it; Sonya runs it in QGIS (processing + styling; data stays local).
 5. **[1-FILE]** one clean download.
 _(Avoid: per-tile / per-municipio manual hunting. That's what wasted time.)_
 

@@ -1,5 +1,6 @@
 # DELIVERABLES CHECKLIST — LANDSCAPE / Co-inhabiting
 _Single source of truth for scope. Every item = teacher requirement + Sonya's intent + method + status + owner._
+_**All maps built FROM SCRATCH** with new data + PyQGIS scripts (no reuse of old CORINE maps). GIS = PyQGIS-scripts-only._
 _Status: ☐ todo · ◐ in progress · ☑ done · ⏸ later/out-of-sprint. Owner: S=Sonya, C=Claude, K=Carlton(help)_
 
 **Format targets:** 3 × A0 vertical panels · A4 memory text · A3 bound dossier (one page per document) · print 300 dpi (200 dpi ok for raster backgrounds). CRS **EPSG:25830**. Project name: TBD.

@@ -17,6 +17,12 @@
 5. **[1-FILE]** one clean download.
 _(Avoid: per-tile / per-municipio manual hunting. That's what wasted time.)_
 
+## STYLING WORKFLOW — one script
+- **Sonya runs `07_SCRIPTS/load_maps.py`** (QGIS ▸ Python Console ▸ open ▸ Run). It loads every layer in `03_PROCESSED`, applies its style, saves+reloads a `.qml` sidecar (so `.fgb` becomes drag-and-drop styled), and groups it. Idempotent. **Email to Sonya = the `.fgb` files + `load_maps.py`.**
+- **Restyle one map:** edit that map's `renderer_*()` block in `load_maps.py`. **Add a map:** add one `renderer_*()` + one `MAPS` registry line.
+- **Build scripts** (`03_build_*`, `04_build_*`) are Claude's headless step (raw data → `.fgb`), not Sonya's.
+- Every script's `BASE` = the CANONICAL PATH above; auto-falls-back to the saved `.qgz` folder.
+
 ## PLUGINS WE USE
 - **SIGPAC Downloader** — crops by municipio **name** (no codes). → 4.5
 - **QuickOSM** — roads/rail/canals/bridges/paths/tourism via one Overpass query for the box. → 4.4, 6, 7

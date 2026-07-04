@@ -11,7 +11,15 @@ _Living record. Newest entries at top. A fresh chat + this log ≈ full context.
 - **9-class legend (ha):** Arable dryland 120,264 · Arable irrigated 95,399 · Scrub (matorral) 46,389 · Non-agri 30,676 · Woody crops 26,799 · **Grazed scrub/pasto arbustivo 26,775** · Forest 25,964 · Pasture (open) 3,700 · Horticulture 145. Total 376,111 ha. (Whole parcels touching frame → slightly exceeds box; precise-clip at layout is Carlton's, optional.)
 - Irrigation split: `coef_regadio` is effectively binary (0 / 100); irrigated if >0.
 - Style script updated: `07_SCRIPTS/02_style_agri_matrix_45.py` (9 classes, ecotone sage #B7C083, ha in every legend label). Scripts + fgb mirrored into `LANDSCAPE_for_Carlton/`.
-- **NEXT:** 4.x cañadas (RGVP clip+classify+quantify), then 4.6 MFE-Huesca. Carlton composes/styles/exports 4.5.
+- Preview: `03_PROCESSED/agri_matrix_45_preview.png` (sanity check, not final styling).
+
+- **4.x CAÑADAS DONE (data).** Built from national RGVP (`RGVP_BDN_2024.shp`, EPSG:25830, Ley 3/1995) → `03_PROCESSED/canadas_4x.fgb` (layer `canadas`, lines). Script `07_SCRIPTS/04_build_canadas_4x.py`.
+  - Type codes decoded: **CA**=Cañada (≤75 m) · **COR**=Cordel (≤37.5 m) · **VE**=Vereda (≤20 m) · **CO**=Colada (variable) · **OV**=sin clasificar/revisar (placeholder rows).
+  - **Geometries CLIPPED to box** (bbox filter alone inflates km with whole lines). In-box result: **361 features, 1,279 km** total. By type: Cañada 437 km · Vereda 365 km · Cordel 248 km · Colada 166 km · sin clasificar 63 km.
+  - **Implementable public-corridor land = 4,939 ha** (length × legal width; the "no-expropriation" stakeholder number for §6). Field `area_ha` per feature; `ancho_m` = legal width.
+  - Box straddles Zaragoza + Huesca + a sliver of Lleida (expected).
+  - Style script `07_SCRIPTS/04_style_canadas_4x.py` — line-weight hierarchy by tipo (cañada thickest), single sienna hue, km in legend. Preview `03_PROCESSED/canadas_4x_preview.png`. Scripts + fgb mirrored to Carlton package.
+- **NEXT:** 4.6 MFE-Huesca (reclass forest/scrub; Zaragoza half still to source). Carlton composes/styles/exports 4.5 + 4.x.
 
 ---
 ## 2026-07-04 — Session 7 (strategy: PyQGIS-only + from scratch)

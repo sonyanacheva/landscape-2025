@@ -7,7 +7,9 @@
 import os, urllib.request, urllib.parse
 from qgis.core import (QgsVectorLayer, QgsVectorFileWriter, QgsProject)
 
-OUT  = r"C:\Users\Sonya\Desktop\Work_Vault\1_University\4th Year\2_LANDSCAPE\LANDSCAPE\01_DATA\infrastructure_osm"
+# Edit BASE once if the repo moves; OUT is derived from it.
+BASE = r"C:\Users\Sonya\Desktop\Work_Vault\_Github\New folder\landscape-2025\LANDSCAPE_for_Carlton"
+OUT  = os.path.join(BASE, "01_DATA", "infrastructure_osm")
 BBOX = "41.36,-0.41,41.86,0.41"   # S,W,N,E in EPSG:4326 = your study box
 os.makedirs(OUT, exist_ok=True)
 

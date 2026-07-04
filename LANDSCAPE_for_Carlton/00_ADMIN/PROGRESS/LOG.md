@@ -19,6 +19,7 @@ _Living record. Newest entries at top. A fresh chat + this log ≈ full context.
   - **Implementable public-corridor land = 4,939 ha** (length × legal width; the "no-expropriation" stakeholder number for §6). Field `area_ha` per feature; `ancho_m` = legal width.
   - Box straddles Zaragoza + Huesca + a sliver of Lleida (expected).
   - Style script `07_SCRIPTS/04_style_canadas_4x.py` — line-weight hierarchy by tipo (cañada thickest), single sienna hue, km in legend. Preview `03_PROCESSED/canadas_4x_preview.png`. Scripts + fgb mirrored to Carlton package.
+- **PATH FIX (all scripts).** Sonya's repo actually sits at `…\_Github\New folder\landscape-2025\…`, not the old `…\2_LANDSCAPE\LANDSCAPE\…` base — style script raised "Layer failed to load". Fixed `01_fetch_osm`, `02_style_agri_matrix_45`, `04_style_canadas_4x` to a single `BASE` constant (canonical path now recorded in PROJECT_HUB) with auto-fallback to the saved `.qgz` project folder. Verified no stale `2_LANDSCAPE\LANDSCAPE` refs remain. **Convention for all future scripts: set `BASE` to the canonical path.** Sonya testing the run-the-style-script method (vs .qml sidecar); pick preference after.
 - **NEXT:** 4.6 MFE-Huesca (reclass forest/scrub; Zaragoza half still to source). Carlton composes/styles/exports 4.5 + 4.x.
 
 ---

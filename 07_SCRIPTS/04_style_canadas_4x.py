@@ -6,10 +6,31 @@
 # DATA: 03_PROCESSED/canadas_4x.fgb (layer 'canadas', EPSG:25830, lines)
 # Built by 07_SCRIPTS/04_build_canadas_4x.py from national RGVP (Ley 3/1995).
 # Field `ancho_m` = legal max width; `area_ha` = implementable public-corridor land.
+import os
 from qgis.core import (QgsVectorLayer, QgsProject, QgsCategorizedSymbolRenderer,
                        QgsRendererCategory, QgsLineSymbol)
 
-PATH = r"C:\Users\Sonya\Desktop\Work_Vault\1_University\4th Year\2_LANDSCAPE\LANDSCAPE_for_Carlton\03_PROCESSED\canadas_4x.fgb"
+# --- locate the shared folder -------------------------------------------------
+# If the repo moves, edit BASE once (this single line, in each script).
+BASE = r"C:\Users\Sonya\Desktop\Work_Vault\_Github\New folder\landscape-2025\LANDSCAPE_for_Carlton"
+DATA = r"03_PROCESSED\canadas_4x.fgb"
+
+def _resolve(base, data):
+    # Try BASE first; then fall back to the folder of the SAVED .qgz project
+    # (handles the repo being cloned to a different path than BASE).
+    cands = [base]
+    proj = QgsProject.instance().fileName()
+    if proj:
+        d = os.path.dirname(proj)
+        cands += [d, os.path.join(d, "LANDSCAPE_for_Carlton"),
+                  os.path.join(os.path.dirname(d), "LANDSCAPE_for_Carlton")]
+    for b in cands:
+        p = os.path.join(b, data)
+        if os.path.exists(p):
+            return p
+    return os.path.join(base, data)   # clear error below if truly missing
+
+PATH = _resolve(BASE, DATA)
 
 # tipo -> (line colour, width mm, dash) + km for the label. Width hierarchy = legal width.
 STYLES = [
@@ -37,4 +58,10 @@ QgsProject.instance().addMapLayer(lyr, False)
 root = QgsProject.instance().layerTreeRoot()
 grp = root.findGroup("4.x CAÑADAS") or root.insertGroup(0, "4.x CAÑADAS")
 grp.addLayer(lyr)
+
+# Save a .qml style sidecar next to the .fgb (QGIS writes valid XML). Once it exists,
+# dragging the .fgb into QGIS auto-applies this styling + legend -- no script needed.
+qml = PATH[:-4] + ".qml"
+msg, ok = lyr.saveNamedStyle(qml)
+print("Style sidecar saved:" if ok else "Sidecar FAILED:", qml, msg or "")
 print("Loaded + styled: 4.x Cañadas — 1,279 km in box; 4,939 ha implementable public corridor")

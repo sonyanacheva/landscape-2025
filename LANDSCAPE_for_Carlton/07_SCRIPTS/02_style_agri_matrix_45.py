@@ -11,11 +11,31 @@
 #   class — it is grazed shrubland, structurally matorral but land-use pasture. It is
 #   the scrub<->grassland ECOTONE that matters most for the lynx lens, so it is neither
 #   merged into Pasture nor into Scrub. "Pasture (open)" = PA+PS grassland grazing only.
+import os
 from qgis.core import (QgsVectorLayer, QgsProject, QgsCategorizedSymbolRenderer,
                        QgsRendererCategory, QgsFillSymbol)
 
-# Update to wherever the shared folder sits on this machine:
-PATH = r"C:\Users\Sonya\Desktop\Work_Vault\1_University\4th Year\2_LANDSCAPE\LANDSCAPE_for_Carlton\03_PROCESSED\agri_matrix_45.fgb"
+# --- locate the shared folder -------------------------------------------------
+# If the repo moves, edit BASE once (this single line, in each script).
+BASE = r"C:\Users\Sonya\Desktop\Work_Vault\_Github\New folder\landscape-2025\LANDSCAPE_for_Carlton"
+DATA = r"03_PROCESSED\agri_matrix_45.fgb"
+
+def _resolve(base, data):
+    # Try BASE first; then fall back to the folder of the SAVED .qgz project
+    # (handles the repo being cloned to a different path than BASE).
+    cands = [base]
+    proj = QgsProject.instance().fileName()
+    if proj:
+        d = os.path.dirname(proj)
+        cands += [d, os.path.join(d, "LANDSCAPE_for_Carlton"),
+                  os.path.join(os.path.dirname(d), "LANDSCAPE_for_Carlton")]
+    for b in cands:
+        p = os.path.join(b, data)
+        if os.path.exists(p):
+            return p
+    return os.path.join(base, data)   # clear error below if truly missing
+
+PATH = _resolve(BASE, DATA)
 
 # class -> (fill colour, hectares) — ordered arable > woody > hort > pasture > ecotone > scrub > forest > non-agri
 # dryland pale straw, irrigated greener, woody olive, ecotone sage (between pasture green & scrub tan)
@@ -49,4 +69,10 @@ QgsProject.instance().addMapLayer(lyr, False)
 root = QgsProject.instance().layerTreeRoot()
 grp = root.findGroup("4.5 AGRICULTURAL MATRIX") or root.insertGroup(0, "4.5 AGRICULTURAL MATRIX")
 grp.addLayer(lyr)
+
+# Save a .qml style sidecar next to the .fgb (QGIS writes valid XML). Once it exists,
+# dragging the .fgb into QGIS auto-applies this styling + legend -- no script needed.
+qml = PATH[:-4] + ".qml"
+msg, ok = lyr.saveNamedStyle(qml)
+print("Style sidecar saved:" if ok else "Sidecar FAILED:", qml, msg or "")
 print("Loaded + styled: 4.5 Agricultural matrix (9 classes, ha legend)")

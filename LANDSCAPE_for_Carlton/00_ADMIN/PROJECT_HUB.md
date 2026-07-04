@@ -4,6 +4,10 @@
 
 > **GIS = PyQGIS only.** All processing + mapping happens through PyQGIS scripts Sonya runs in QGIS (credit-safe: heavy data stays off Claude's context). **We build the new maps FROM SCRATCH** — new data + fresh scripts, styling and layouts; old CORINE maps are replaced, not reused.
 
+> **⚠️ CANONICAL PATH (use in every PyQGIS script `BASE` line):**
+> `C:\Users\Sonya\Desktop\Work_Vault\_Github\New folder\landscape-2025\LANDSCAPE_for_Carlton`
+> Processed layers live under `…\LANDSCAPE_for_Carlton\03_PROCESSED\`. Style scripts set `BASE` to this and derive the data path; they also auto-fall-back to the saved `.qgz` project folder if BASE is stale. (Old dead base — do NOT use: `…\1_University\4th Year\2_LANDSCAPE\LANDSCAPE`.)
+
 ---
 ## HOW WE GET DATA — order of preference
 1. **[HAVE]** already in your files → I just clip/restyle.

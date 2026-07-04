@@ -84,11 +84,29 @@ def renderer_forest():
         cats.append(QgsRendererCategory(val, sym, f"{val}  ({ha:,} ha)"))
     return QgsCategorizedSymbolRenderer("clase", cats)
 
+def renderer_canada_lc():
+    # 4.x-b Cañada × land-cover — categorized on readiness, km in labels.
+    # Colours the protected spine by the matrix it runs through: green ready,
+    # amber permeable, RED = intensive barrier (where §6 hedgerow/crossings go).
+    STYLES = [
+        ("Semi-natural (corridor-ready)",  "#2E7D32", 0.6, 205),
+        ("Extensive farmland (permeable)", "#C9A227", 0.5, 161),
+        ("Intensive farmland (barrier)",   "#C0392B", 0.8,  78),
+        ("Other / non-agricultural",       "#9E9E9E", 0.3, 781),
+    ]
+    cats = []
+    for val, col, w, km in STYLES:
+        sym = QgsLineSymbol.createSimple({"line_color": col, "line_width": str(w),
+                                          "capstyle": "round", "joinstyle": "round"})
+        cats.append(QgsRendererCategory(val, sym, f"{val}  ({km:,} km)"))
+    return QgsCategorizedSymbolRenderer("readiness", cats)
+
 # =====================  REGISTRY (one line per map)  ==========================
 MAPS = [
-    {"file": "agri_matrix_45.fgb", "name": "4.5 Agricultural matrix",       "group": "4.5 AGRICULTURAL MATRIX", "renderer": renderer_agri},
-    {"file": "canadas_4x.fgb",     "name": "4.x Cañadas (vías pecuarias)",  "group": "4.x CAÑADAS",             "renderer": renderer_canadas},
-    {"file": "forest_46.fgb",      "name": "4.6 Forest / scrub / natural",  "group": "4.6 FOREST & NATURAL VEG","renderer": renderer_forest},
+    {"file": "agri_matrix_45.fgb",   "name": "4.5 Agricultural matrix",        "group": "4.5 AGRICULTURAL MATRIX",  "renderer": renderer_agri},
+    {"file": "canadas_4x.fgb",       "name": "4.x Cañadas (vías pecuarias)",   "group": "4.x CAÑADAS",              "renderer": renderer_canadas},
+    {"file": "forest_46.fgb",        "name": "4.6 Forest / scrub / natural",   "group": "4.6 FOREST & NATURAL VEG", "renderer": renderer_forest},
+    {"file": "canada_landcover.fgb", "name": "4.x-b Cañada × land cover",      "group": "4.x CAÑADAS",              "renderer": renderer_canada_lc},
 ]
 
 # =====================  ORCHESTRATOR (stable; no need to edit)  ================

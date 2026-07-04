@@ -31,6 +31,11 @@ _Living record. Newest entries at top. A fresh chat + this log ≈ full context.
 - **All three ready-now §4 maps done (4.5 + 4.6 + 4.x).** Everything else in Carlton's scope is data-blocked (nothing more buildable from files on disk). Plan reframed **from "map order" to "unblock"**: two master keys — **DEM 5 m** (unlocks 4.1/4.3/5.1c/5.2) and **old-vault export** (unlocks §3×4 + 4.1/4.2). §3 + 4.2 are composition/restyle of existing vault layers → Carlton can build in parallel with Claude's DEM-dependent §4/§5 analysis.
 - **Wrote `00_ADMIN/DATA_REQUEST_for_Sonya.md`** — message-ready, prioritized: P1 = DEM (WCS) + vault `context\` bundle (corridors, Natura 2000 w/ code+name fields, admin, towns, critical points); P2 = CHE hydro, GEODE, contours, human presence, MFE50_50, OSM run, SNCZI; P3 = tourism/grid/sections/MDT02 later. Includes export-format rules + a do-NOT-copy list.
 - **Wrote `00_ADMIN/PROGRESS/SPEC_section3.md`** — §3.1–3.4 composition spec (layers/scales/styling to benchmark, shared `.qpt` template, nested-scale insets) + auto-ha Natura 2000 legend logic (needs site code+name fields; `06_natura_ha_legend.py` + `renderer_natura()` to be written once real field names confirmed).
+- **MEANTIME ANALYSIS (data in hand): Cañada × land-cover overlay.** `06_analyze_canada_landcover.py` overlays the spine on the 4.5 matrix → `03_PROCESSED/canada_landcover.fgb` (segments tagged agri_class + readiness) + preview. Added `renderer_canada_lc()` + registry line to `load_maps.py`.
+  - **Centre-line:** 64% of the network runs on non-agri parcels = the legal spine is largely intact/unploughed.
+  - **Buffered matrix (100 m, 10,056 ha):** 25% semi-natural (ready) · 28% permeable dryland · **15% (~1,465 ha) intensive irrigated = §6 intervention priority** · 32% other. ~53% already permeable-or-better.
+  - Barrier stretches cluster where the network meets irrigation incl. **near Hunilla (SE)** — matches the §6a "Hunilla cut off" problem. Ready (green) concentrates through the central Valcuerna/badland zone.
+  - Full method + caveats + readiness scheme → `00_ADMIN/PROGRESS/ANALYSIS_canada_landcover.md`. Re-run sharper once MFE-Zaragoza completes 4.6.
 - **NEXT:** Sonya sends the P1 data drop → confirm Natura field names, build auto-ha legend, and Carlton starts §3 composition while Claude takes DEM-fed 4.1/4.3/§5.
 
 ---

@@ -28,7 +28,10 @@ _Living record. Newest entries at top. A fresh chat + this log ≈ full context.
   - **Riparian woodland (A.F.M. Riberas) traces the Valcuerna/river corridor** — direct support for the xeroriparian spine (§6). Wetland = saladas/Hunilla context.
   - ⚠️ **Huesca (22) only** = ~78% of box (293,579 of 376,111 ha); Zaragoza (50) strip blank until **MFE50_50** sourced (1 file) → re-run `05_build_forest_46.py`.
   - Added `renderer_forest()` + registry line to `load_maps.py`. Preview `03_PROCESSED/forest_46_preview.png`.
-- **NEXT (still blocked on downloads/vault):** DEM 5 m (Aragón WCS) unlocks 4.1/4.3 + §5 terrain; OSM (QuickOSM) unlocks 4.4; MFE50_50 completes 4.6; old-vault export unlocks §3 + 4.1/4.2. Carlton composes/styles/exports 4.5 + 4.6 + 4.x via `load_maps.py`.
+- **All three ready-now §4 maps done (4.5 + 4.6 + 4.x).** Everything else in Carlton's scope is data-blocked (nothing more buildable from files on disk). Plan reframed **from "map order" to "unblock"**: two master keys — **DEM 5 m** (unlocks 4.1/4.3/5.1c/5.2) and **old-vault export** (unlocks §3×4 + 4.1/4.2). §3 + 4.2 are composition/restyle of existing vault layers → Carlton can build in parallel with Claude's DEM-dependent §4/§5 analysis.
+- **Wrote `00_ADMIN/DATA_REQUEST_for_Sonya.md`** — message-ready, prioritized: P1 = DEM (WCS) + vault `context\` bundle (corridors, Natura 2000 w/ code+name fields, admin, towns, critical points); P2 = CHE hydro, GEODE, contours, human presence, MFE50_50, OSM run, SNCZI; P3 = tourism/grid/sections/MDT02 later. Includes export-format rules + a do-NOT-copy list.
+- **Wrote `00_ADMIN/PROGRESS/SPEC_section3.md`** — §3.1–3.4 composition spec (layers/scales/styling to benchmark, shared `.qpt` template, nested-scale insets) + auto-ha Natura 2000 legend logic (needs site code+name fields; `06_natura_ha_legend.py` + `renderer_natura()` to be written once real field names confirmed).
+- **NEXT:** Sonya sends the P1 data drop → confirm Natura field names, build auto-ha legend, and Carlton starts §3 composition while Claude takes DEM-fed 4.1/4.3/§5.
 
 ---
 ## 2026-07-04 — Session 7 (strategy: PyQGIS-only + from scratch)

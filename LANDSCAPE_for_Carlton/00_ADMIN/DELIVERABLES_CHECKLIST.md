@@ -23,7 +23,7 @@ _Status: ☐ todo · ◐ in progress · ☑ done · ⏸ later/out-of-sprint. Own
 - ◐ **4.2 Geomorphology** — landforms, gypsum badlands, saladas. _Have: IGME GEODE. Add DEM geomorphons._ [C/S]
 - ◐ **4.3 Flow accumulation + erosion** — + flood zones (SNCZI). _Have: flow-accum + erosion index MAP1 built. Restyle; verify RUSLE logic._ [C/S]
 - ☐ **4.4 Human presence / barriers** — population, roads, rail, **canals**; **catalogue underpasses & bridges** (flag under-utilised / overkill; multiple bridges seen). _OSM + manual over orthophoto._ [S catalogue / C base]
-- ◐ **4.5 Agricultural matrix** — intensive / extensive / woody crops, **legend summing ha**. _REPLACE CORINE → **SIGPAC** real crops._ **DATA DONE** → `03_PROCESSED/agri_matrix_45.fgb` (9 classes, 298,434 parcels, PR kept as own ecotone class). Carlton composes/styles/exports. [C process+ha ✓ / K style]
+- ☐ **4.5 Agricultural matrix** — intensive / extensive / woody crops, **legend summing ha**. _REPLACE CORINE → **SIGPAC** real crops._ [S download / C process+ha]
 - ☐ **4.6 Forest / shrub / scrub / natural veg** — realistically proven, not generic. _REPLACE CORINE → **MFE + Copernicus Small Woody Features**._ [S download / C process]
 - ◐ **4.x Cañadas / vías pecuarias** — map protected public drover's roads (Ley 3/1995; cañada ≤75 m / cordel ≤37.5 m / vereda ≤20 m). **Triple use:** corridor+hedgerow backbone (§6), trekking/MTB ecotourism network (§6/§7), implementable on public land = no expropriation (stakeholder argument). _Have `canadas` layers; need Aragón vías pecuarias source to confirm._ [S has data / C classify+quantify]
 

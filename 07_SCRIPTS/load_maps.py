@@ -141,6 +141,19 @@ def renderer_human_pressure():
                                       "outline_width": "0.1"})
     return QgsCategorizedSymbolRenderer("zone", [QgsRendererCategory("250 m human-pressure zone", sym, "250 m human-pressure zone")])
 
+def renderer_aos_frame():
+    # AREA OF STUDY frame — bold outline, no fill, drawn over everything.
+    return QgsSingleSymbolRenderer(QgsFillSymbol.createSimple(
+        {"style": "no", "outline_color": "#111111", "outline_width": "0.5"}))
+
+def renderer_towns():
+    # §3.3 populated places — size hierarchy by place type (enable labels on 'name').
+    STYLES = [("town", "#333333", "3.4"), ("village", "#555555", "2.4"), ("hamlet", "#888888", "1.7")]
+    cats = [QgsRendererCategory(v, QgsMarkerSymbol.createSimple(
+        {"name": "circle", "color": c, "outline_color": "#FFFFFF", "outline_width": "0.2", "size": s}), v)
+        for v, c, s in STYLES]
+    return QgsCategorizedSymbolRenderer("place", cats)
+
 def _outline(color, width):
     return QgsSingleSymbolRenderer(QgsFillSymbol.createSimple(
         {"style": "no", "outline_color": color, "outline_width": str(width)}))
@@ -324,6 +337,8 @@ MAPS = [
     {"file": "comunidades_3.fgb",    "name": "3.x Aragón boundary",            "group": "3.x ADMIN BOUNDARIES",    "renderer": renderer_comunidades},
     {"file": "provinces_3.fgb",      "name": "3.x Provinces",                  "group": "3.x ADMIN BOUNDARIES",    "renderer": renderer_provinces},
     {"file": "municipios_box_33.fgb","name": "3.3 Municipios (work area)",      "group": "3.x ADMIN BOUNDARIES",    "renderer": renderer_municipios},
+    {"file": "towns_33.fgb",         "name": "3.3 Towns",                      "group": "3.x ADMIN BOUNDARIES",    "renderer": renderer_towns},
+    {"file": "aos_frame.fgb",        "name": "Area of study frame",            "group": "FRAME (AOS)",              "renderer": renderer_aos_frame},
     {"file": "corridor_3.fgb",       "name": "3.1 WWF priority corridors",     "group": "3.1 CONTEXT",              "renderer": renderer_corridor},
     {"file": "zonas_criticas_34.fgb","name": "3.4 Critical zones (WWF)",       "group": "3.4 CRITICAL POINTS",      "renderer": renderer_zonas_criticas},
 ]
@@ -345,6 +360,17 @@ RASTERS = [
         (3, "#74C476", "Lynx cover (scrub/forest)"),       (4, "#C7E9C0", "Rabbit foraging (open)"),
         (5, "#7EA6C4", "Wetland / salada"),                (6, "#F0EAD2", "Matrix (permeable)"),
         (7, "#E6C2B3", "Matrix (hostile)"),                (8, "#E8E8E8", "Non-habitat")]},
+    {"file": "hillshade.tif",         "name": "Hillshade (backdrop)",       "group": "0 BASEMAP", "gray": True},
+]
+
+# Layer-tree group order, TOP → BOTTOM (subject/points up, fills down, basemap at the bottom).
+GROUP_ORDER = [
+    "FRAME (AOS)",
+    "5.1b STORYBOARD", "6a MASTERPLAN", "5.2 RESISTANCE & CORRIDOR", "5.1a HABITAT",
+    "3.4 CRITICAL POINTS", "4.4 HUMAN PRESSURE & BARRIERS", "4.x CAÑADAS",
+    "4.3 FLOW & EROSION", "4.1 HYDROGRAPHY", "3.3 NATURA 2000",
+    "4.6 FOREST & NATURAL VEG", "4.5 AGRICULTURAL MATRIX", "4.2 GEOMORPHOLOGY",
+    "3.x ADMIN BOUNDARIES", "3.1 CONTEXT", "0 BASEMAP",
 ]
 
 # =====================  ORCHESTRATOR (stable; no need to edit)  ================
@@ -422,6 +448,10 @@ def run():
             rl = QgsRasterLayer(path, r["name"])
             if not rl.isValid():
                 print("FAIL (invalid raster):", path); continue
+            if r.get("gray"):                                 # grayscale backdrop (hillshade) — default gray render
+                QgsProject.instance().addMapLayer(rl, False)
+                grp = root.findGroup(r["group"]) or root.insertGroup(0, r["group"])
+                grp.addLayer(rl); print("LOADED raster (gray):", r["name"]); continue
             shader = QgsRasterShader(); ramp = QgsColorRampShader()
             if "categories" in r:                             # discrete categorical raster
                 items = [QgsColorRampShader.ColorRampItem(v, QColor(c), lab)
@@ -444,6 +474,12 @@ def run():
             print("LOADED raster:", r["name"])
         except Exception as e:
             print("raster style failed for", r["name"], "->", e)
+
+    # order the groups top→bottom per GROUP_ORDER (basemap ends at the bottom)
+    for name in reversed(GROUP_ORDER):
+        g = root.findGroup(name)
+        if g is not None:
+            root.insertChildNode(0, g.clone()); root.removeChildNode(g)
     print("load_maps: done.")
 
 run()

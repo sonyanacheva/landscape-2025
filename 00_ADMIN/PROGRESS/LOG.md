@@ -2,6 +2,15 @@
 _Living record. Newest entries at top. A fresh chat + this log ≈ full context._
 
 ---
+## 2026-07-05 — Session 15 (hillshade backdrop + layer order + §3–§8 review)
+
+- **Hillshade backdrop** (Sonya's ask): `hillshade.tif` copied to `03_PROCESSED`, added to load_maps as a **grayscale "0 BASEMAP"** group; raster loader got a `gray` mode. Backs hydrography + all territorial maps.
+- **load_maps LAYER ORDER fixed:** added `GROUP_ORDER` (top→bottom: FRAME · points/subject maps · line maps · fills · admin/context · BASEMAP) enforced at end of run() via clone+reinsert. Within-group stacking already correct (points>lines>polys>rasters).
+- **§3.3 gaps closed** (`23_build_frame_towns.py`): **AOS frame** (`aos_frame.fgb`, 66×53 km rectangle, own top "FRAME (AOS)" group) + **towns** (`towns_33.fgb`, 67 places incl. Fraga/Binéfar/Sariñena, sized by type) added to load_maps.
+- **Full technical QA (all 33 layers): PASS** — every vector EPSG:25830, valid, no null style-fields, all wired to load_maps; every raster 25830. 0 issues.
+- **Section review §3–§8:** §3 + §4 + §5.1a/b + §5.2 all data-complete (compose). Open = 5.1c/§7/§8-sections (need 2 m DEM), §6 design (Sonya: Hunilla, ecotourism, project name), corridor-name confirm (3.1), 4.4 crossing-structure field verification (ortho). No fixable data issues remain. **load_maps: 33 layers.**
+
+---
 ## 2026-07-05 — Session 14 (§5.1b, §6, §8 content + §7 data instructions)
 
 - **5.1b storyboard viewpoints** (`21_build_viewpoints_51b.py`): 17 viewpoints along the 93 km corridor, classified (ecotone/ravine/river/barrier/core) → `03_PROCESSED/viewpoints_51b.fgb` + `00_ADMIN/viewpoints_51b.csv` + storyboard `REF_storyboard_51b.md` (6 hero render views + prompt scaffold). Key story: corridor threads between hard barriers, crosses only 1 canal (V5) + 1 main road (V12); cores mid + Valcuerna end. Added renderer_viewpoints + registry.

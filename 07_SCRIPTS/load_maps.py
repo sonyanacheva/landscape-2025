@@ -149,6 +149,34 @@ def renderer_municipios():  return _outline("#9A8C98", 0.12)   # 3.3 work-area m
 def renderer_provinces():   return _outline("#6D6875", 0.35)   # province boundaries
 def renderer_comunidades(): return _outline("#403A44", 0.55)   # Aragón boundary
 
+def renderer_interventions():
+    # 6a masterplan — proposed intervention nodes.
+    fc = QgsMarkerSymbol.createSimple({"name": "diamond", "color": "#D7301F",
+         "outline_color": "#FFFFFF", "outline_width": "0.3", "size": "3.6"})
+    hg = QgsMarkerSymbol.createSimple({"name": "cross_fill", "color": "#238B45",
+         "outline_color": "#FFFFFF", "outline_width": "0.2", "size": "3.0"})
+    cats = [QgsRendererCategory("Fauna crossing", fc, "Fauna crossing (priority)"),
+            QgsRendererCategory("Hedgerow / field-corner", hg, "Hedgerow / field-corner")]
+    return QgsCategorizedSymbolRenderer("tipo", cats)
+
+def renderer_viewpoints():
+    # 5.1b storyboard viewpoints — categorized by what the lynx encounters.
+    CLASSES = [
+        ("Barrier crossing",             "circle",   "#B2182B", "3.6"),
+        ("Ravine crossing (Valcuerna)",  "circle",   "#08306B", "3.4"),
+        ("River crossing",               "circle",   "#2171B5", "3.4"),
+        ("Protected core",               "star",     "#1A9850", "4.0"),
+        ("Habitat discontinuity",        "triangle", "#FDAE61", "3.4"),
+        ("Ecotone / cover",              "circle",   "#74C476", "3.0"),
+        ("Transit",                      "circle",   "#BBBBBB", "2.6"),
+    ]
+    cats = []
+    for val, shape, col, sz in CLASSES:
+        sym = QgsMarkerSymbol.createSimple({"name": shape, "color": col,
+              "outline_color": "#FFFFFF", "outline_width": "0.3", "size": sz})
+        cats.append(QgsRendererCategory(val, sym, val))
+    return QgsCategorizedSymbolRenderer("clase", cats)
+
 def renderer_lcp():
     # 5.2 our least-cost corridor (Valcuerna ↔ Alcubierre) from the resistance surface.
     sym = QgsLineSymbol.createSimple({"line_color": "#7A0000", "line_width": "1.4", "capstyle": "round"})
@@ -291,6 +319,8 @@ MAPS = [
     {"file": "flood_43.fgb",         "name": "4.3 Flood zones (SNCZI)",        "group": "4.3 FLOW & EROSION",       "renderer": renderer_flood},
     {"file": "corridor_wwf_52.fgb",  "name": "5.2 WWF corridor (reference)",   "group": "5.2 RESISTANCE & CORRIDOR","renderer": renderer_wwf},
     {"file": "corridor_lcp_52.fgb",  "name": "5.2 Least-cost corridor",        "group": "5.2 RESISTANCE & CORRIDOR","renderer": renderer_lcp},
+    {"file": "viewpoints_51b.fgb",   "name": "5.1b Storyboard viewpoints",     "group": "5.1b STORYBOARD",          "renderer": renderer_viewpoints},
+    {"file": "interventions_6a.fgb", "name": "6a Interventions (proposed)",    "group": "6a MASTERPLAN",            "renderer": renderer_interventions},
     {"file": "comunidades_3.fgb",    "name": "3.x Aragón boundary",            "group": "3.x ADMIN BOUNDARIES",    "renderer": renderer_comunidades},
     {"file": "provinces_3.fgb",      "name": "3.x Provinces",                  "group": "3.x ADMIN BOUNDARIES",    "renderer": renderer_provinces},
     {"file": "municipios_box_33.fgb","name": "3.3 Municipios (work area)",      "group": "3.x ADMIN BOUNDARIES",    "renderer": renderer_municipios},

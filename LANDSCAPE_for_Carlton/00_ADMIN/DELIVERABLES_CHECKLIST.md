@@ -32,14 +32,14 @@ _Status: ☐ todo · ◐ in progress · ☑ done · ⏸ later/out-of-sprint. Own
 
 ### §5 Species-specific ecological diagnosis
 - ◐ **5.1a Lynx + rabbit habitat** — differentiated colours. _Rebuild on SIGPAC/MFE base._ **DATA DONE** → `03_PROCESSED/habitat_51a.tif` (categorical raster on **combined SIGPAC+MFE base**; adds Riparian corridor + Wetland/salada; **~116,300 ha effective lynx habitat**, 36,795 ha optimal ecotone). Method + caveats: `PROGRESS/METHOD_habitat_resistance_5.md`. [C ✓ / K style]
-- ☐ **5.1b Lynx-path storyboard** — numbered path; each view **classified**: ecotone, ravine, large-river crossing, habitat discontinuity, barrier; **opportunities**: hedgerow, un-ploughed field corners (machine turn-circles), Small Woody Features. _LCP in QGIS → viewpoints → ChatGPT renders._ [C locate+classify / S+ChatGPT render]
+- ◐ **5.1b Lynx-path storyboard** **DATA DONE** → `viewpoints_51b.fgb` (17 classified views) + `REF_storyboard_51b.md`. ORIG: — numbered path; each view **classified**: ecotone, ravine, large-river crossing, habitat discontinuity, barrier; **opportunities**: hedgerow, un-ploughed field corners (machine turn-circles), Small Woody Features. _LCP in QGIS → viewpoints → ChatGPT renders._ [C locate+classify / S+ChatGPT render]
 - ☐ **5.1c Ecological sections** — typologies, elevation change, **tree/scrub cover heights**. _Needs finer DEM (2 m) + canopy height raster._ [C/S]
 - ◐ **5.2 Resistance map** — lynx-specific friction + **rabbit availability as conditional permeability** (matrix cells with rabbits = lower resistance; explains "out-of-habitat but visited"). _Have resistance surface (CORINE) → re-run on new base; re-run LCP._ **DATA DONE** → `03_PROCESSED/resistance_52.tif` (combined base × slope + barrier walls) + `corridor_lcp_52.fgb` (**93 km LCP, Alcubierre ↔ Valcuerna**; matches 4/5 WWF links) + `corridor_swath_52.tif` (19,722 ha band). Values = first pass, review vs literature (see METHOD doc). [C ✓ / K style]
 
 ### §6 Masterplan — the intervention strategy
-- ☐ **6a Masterplan** — reactivate the dried **Barranco de Valcuerna** as **ecological spine**; show patches, connectors, interventions, **Hondo de la Hunilla** reconnection (currently cut off by intensive agri machinery → add wildlife infrastructure link). [C/S]
-- ☐ **6b Feedback-loop diagram** — erosion control (slopes+barranco) → seed dispersal by roaming fauna → ecotourism → regenerative agriculture (financially viable) → biodiversity. Arid-honest, not a lush garden. [C draft / S]
-- ☐ **6c Forman-inspired scheme-sections + short argument text** — per intervention type; stakeholder case (spending justification). [C draft / S]
+- ◐ **6a Masterplan** **STAGED** → `interventions_6a.fgb` (55 nodes) + `REF_masterplan_6a.md`. ORIG: — reactivate the dried **Barranco de Valcuerna** as **ecological spine**; show patches, connectors, interventions, **Hondo de la Hunilla** reconnection (currently cut off by intensive agri machinery → add wildlife infrastructure link). [C/S]
+- ◐ **6b Feedback-loop diagram** **DRAFT** → `REF_interventions_methods_6_8.md`. ORIG: — erosion control (slopes+barranco) → seed dispersal by roaming fauna → ecotourism → regenerative agriculture (financially viable) → biodiversity. Arid-honest, not a lush garden. [C draft / S]
+- ◐ **6c Forman scheme-sections** **DRAFT** → `REF_interventions_methods_6_8.md`. ORIG: Forman-inspired scheme-sections + short argument text** — per intervention type; stakeholder case (spending justification). [C draft / S]
 - ⏳ **Decision:** which ecotourism assets to show here vs earlier — huts, fisherman lodges, ruins/historical sites, **Nowhere festival** (~30 km, regional identity), hiking + MTB routes. [S decide]
 
 ---
@@ -56,14 +56,14 @@ _Status: ☐ todo · ◐ in progress · ☑ done · ⏸ later/out-of-sprint. Own
    - ☐ **P2** land improved → more replanting; wildlife present as **seed dispersers**; ground indents store dew/humidity → some autonomous planting.
    - ☐ **P3** post-**flood event** + light **community intervention** (families stabilising trees, clearing enlarged barranco to prevent short-circuit); shows built resilience.
    - ☐ **P4** long-term vision — fully activated, bold but sensible, true to the arid ecology.
-- ☐ **8c Erosion mechanism** — name it right: surface runoff / sheet–rill–gully; water-harvesting + deep roots for infiltration.
-- ☐ **8d Flood-establishment method** — CORRECTED: rock-detention structures (check dams / one-rock dams / gully plugs) + seed pelleting/seed balls + flood-timed sowing (not the cork-tap method). [C verify sources]
+- ☑ **8c Erosion mechanism** VERIFIED (`REF_interventions_methods_6_8.md`). ORIG: — name it right: surface runoff / sheet–rill–gully; water-harvesting + deep roots for infiltration.
+- ☑ **8d Flood-establishment method** VERIFIED (`REF_interventions_methods_6_8.md`). ORIG: — CORRECTED: rock-detention structures (check dams / one-rock dams / gully plugs) + seed pelleting/seed balls + flood-timed sowing (not the cork-tap method). [C verify sources]
 - ◐ **8e Planting calendar** — xeroriparian species × month; autumn–winter window. **DRAFT DONE** → `00_ADMIN/REF_planting_palette_8e.md` + `species_palette_8e.csv` (31 verified native species across 5 gradient bands: riparian core, xeric shrub matrix, gypsum specialists, saladas fringe, steppe ground; species×month calendar; nurse-plant + water-harvesting techniques; caveats). Sonya/teacher to confirm + optional field check. [C draft ✓ / S confirm]
 
 ---
 ## FINAL / CROSS-CUTTING
 - ☐ **Project name** — shortlist exists (La Espina Seca / El Pulso del Barranco / Contrato Valcuerna…). [S pick]
-- ☐ **A4 memory text** — narrative, goals, vision, stakeholder case. [C draft / S edit]
+- ◐ **A4 memory text** DRAFT → `00_ADMIN/A4_memory_text.md`. ORIG: — narrative, goals, vision, stakeholder case. [C draft / S edit]
 - ☐ **A3 dossier** — one page per document, bound. [S assemble / C stage]
 - ☐ **Panel assembly (Figma)** — incremental as maps finish; 300 dpi export. [S / C stage assets]
 - ⏸ **§1 Lynx+rabbit analysis** — not Sonya's, incomplete → separate later. [out of sprint]

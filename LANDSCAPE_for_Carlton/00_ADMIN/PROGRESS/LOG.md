@@ -2,6 +2,16 @@
 _Living record. Newest entries at top. A fresh chat + this log ≈ full context._
 
 ---
+## 2026-07-05 — Session 14 (§5.1b, §6, §8 content + §7 data instructions)
+
+- **5.1b storyboard viewpoints** (`21_build_viewpoints_51b.py`): 17 viewpoints along the 93 km corridor, classified (ecotone/ravine/river/barrier/core) → `03_PROCESSED/viewpoints_51b.fgb` + `00_ADMIN/viewpoints_51b.csv` + storyboard `REF_storyboard_51b.md` (6 hero render views + prompt scaffold). Key story: corridor threads between hard barriers, crosses only 1 canal (V5) + 1 main road (V12); cores mid + Valcuerna end. Added renderer_viewpoints + registry.
+- **§6a masterplan staged** (`22_build_interventions_6a.py`): **55 grounded intervention nodes** → `03_PROCESSED/interventions_6a.fgb` (14 priority fauna crossings from 4.4 open cuts + 39 hedgerow/field-corner nodes on cañadas × intensive farmland). Renderer + registry. Staging doc `REF_masterplan_6a.md` (3 zones, typology, assembly order). ⚠ Hunilla not in CHE lagoons by name → Sonya to place.
+- **§8c/§8d methods VERIFIED + §6b/§6c drafted** → `REF_interventions_methods_6_8.md`. 8c erosion = surface runoff · sheet→rill→gully (Valcuerna = gully system). 8d = rock-detention (check dams / one-rock dams / gully plugs) + seed pelleting/seed balls + flood-timed sowing (sources cited; replaces cork-tap). 6b feedback-loop diagram + 6c Forman scheme-sections (5 types w/ stakeholder argument).
+- **A4 memory text drafted** → `00_ADMIN/A4_memory_text.md` (arid-honest cohabitation narrative + funding case; Sonya to set project name + edit voice).
+- **§7 data instructions** → `00_ADMIN/HOWTO_grab_2m_dem_lidar_7.md`: CNIG MDT02 2 m + PNOA LiDAR canopy for the 5 grid tiles (cluster near Candasnos ~753–765k E). LiDAR Height Extractor plugin OR MDS−MDT. **This 2 m DEM + canopy is the last data gap** (unlocks 5.1c, §7 1:5000, §8 sections).
+- **load_maps: 31 layers.** Remaining = QGIS composition (Carlton) + §7 2 m data + Sonya's decisions (project name, Hunilla, ecotourism assets, overlays).
+
+---
 ## 2026-07-05 — Session 13 (audit → consolidate + rebuild §5 on combined base)
 
 - **Verification pass:** all 21 vectors clean (CRS 25830, valid, no style-field nulls). **Our 5.2 LCP cross-validates against WWF corridor — 4 of 5 study links within 2 km.** Data gaps: only **MDT02 2 m DEM + LiDAR canopy** for the 5 §7 tiles remain (for 5.1c/§7/§8); minor: east DEM strip, SWF.

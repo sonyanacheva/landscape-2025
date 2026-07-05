@@ -1,0 +1,18 @@
+view,km,clase,feature,habitat,opportunity
+1,0.0,Ecotone / cover,ecotone,ecotone,Reinforce cover; connect patches
+2,6.0,Ecotone / cover,ecotone,ecotone,Reinforce cover; connect patches
+3,12.0,Ecotone / cover,lynx cover,lynx cover,Reinforce cover; connect patches
+4,18.0,Ecotone / cover,ecotone,ecotone,Reinforce cover; connect patches
+5,24.0,Barrier crossing,Canal,lynx cover,Wildlife crossing / underpass
+6,30.0,Ecotone / cover,lynx cover,lynx cover,Reinforce cover; connect patches
+7,36.0,River crossing,Main river,ecotone,Riparian stepping-stone; bank cover
+8,42.0,Ecotone / cover,lynx cover,lynx cover,Reinforce cover; connect patches
+9,48.0,Protected core,Natura 2000 site,lynx cover,Source population; protect
+10,54.0,Protected core,Natura 2000 site,ecotone,Source population; protect
+11,60.0,Protected core,Natura 2000 site,lynx cover,Source population; protect
+12,66.0,Barrier crossing,Main road (N / primary),ecotone,Wildlife crossing / underpass
+13,72.0,Ecotone / cover,ecotone,ecotone,Reinforce cover; connect patches
+14,78.0,Ecotone / cover,ecotone,ecotone,Reinforce cover; connect patches
+15,84.0,Protected core,Natura 2000 site,lynx cover,Source population; protect
+16,90.0,Protected core,Natura 2000 site,lynx cover,Source population; protect
+17,93.3,Protected core,Natura 2000 site,lynx cover,Source population; protect

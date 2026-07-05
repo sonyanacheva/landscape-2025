@@ -2,6 +2,22 @@
 _Living record. Newest entries at top. A fresh chat + this log ≈ full context._
 
 ---
+## 2026-07-05 — Session 13 (audit → consolidate + rebuild §5 on combined base)
+
+- **Verification pass:** all 21 vectors clean (CRS 25830, valid, no style-field nulls). **Our 5.2 LCP cross-validates against WWF corridor — 4 of 5 study links within 2 km.** Data gaps: only **MDT02 2 m DEM + LiDAR canopy** for the 5 §7 tiles remain (for 5.1c/§7/§8); minor: east DEM strip, SWF.
+- **Admin consolidated to NATIONAL set** (`16_build_admin_3.py` now reads `context/`): municipios **61** (incl. Lleida/Cataluña side, vs IDEAragón 52 Aragón-only), provinces = Huesca/Zaragoza/**Lleida**. Aragón comunidad kept. Natura = single (ours). IDEAragón raw files kept as source, harmless.
+- **§5 REBUILT on COMBINED base** (`19_build_combined_hab_resist_5.py`, supersedes 14+15). MFE natural-veg where present, else SIGPAC. Fast raster pipeline (13 s).
+  - **5.1a habitat now a categorical 25 m raster** `habitat_51a.tif` (+ `.codes.txt`), styled discrete in load_maps (added Exact-ramp support to the raster loader). New classes: **Riparian corridor 2,716 ha + Wetland/salada 1,056 ha** distinct. Effective lynx habitat **≈116,300 ha** (was 99,128). Ecotone 36,795 · cover 76,815.
+  - **5.2 resistance/corridor** on combined base: LCP **93 km, cost 10,111** (down from 11,374 — cheaper riparian/forest route); swath **19,722 ha**. Same endpoints (Alcubierre↔Valcuerna).
+  - METHOD doc updated. Deleted 14/15 + old habitat vector. **load_maps: 25 layers** (24 + habitat raster − habitat vector; net stable).
+- **5.2 now references the WWF corridor** via a **dashed reference overlay** (`corridor_wwf_52.fgb`, renderer_wwf) in the 5.2 group. Our single least-cost path matches 4/5 WWF study links.
+- **WWF corridor zone = separate swath-like layer** (`20_build_wwf_swath_52.py` → `corridor_wwf_swath_52.tif`): soft distance gradient fading from the WWF line (1.5 km, 39,980 ha), pale purple, placed BENEATH the precise swath in load_maps (Carlton's spec). Suggests the WWF corridor in the swath's visual language without a hard buffer. Final 5.2 stack: WWF zone (pale, bottom) → our precise swath (crisp) → resistance → LCP line (red) → WWF line (dashed).
+- ⚠ **QGIS raster cache gotcha:** overwriting a loaded .tif shows a stale cached raster; fix = remove layer + re-run (or restart QGIS). New files (like the WWF zone) aren't affected.
+- **Corridor swath: composite tried, then reverted to the precise band (Carlton's call).** Buffering the WWF corridor line 1.5 km into the swath looked crude/imprecise (WWF corridor = a centerline; a fixed buffer is a fat featureless blob). Final: swath = our **precise resistance least-cost band** (19,722 ha, continuous purple), WWF shown as a **dashed reference line**. Standard model-vs-reference presentation; agreement 4/5 links. Composite script deleted.
+- ⚠ **Multi-core NETWORK attempt reverted.** `20_build_corridor_network_52.py` (MST over 5 cores) looked "completely unrelated" (Carlton) — diagnosed: Alcubierre core only 42% in box → rep-point OUTSIDE box (edge-clamped); Monegros & Retuerta-Sástago collapsed to one point. Reverted to the clean **single Valcuerna↔Alcubierre LCP** (re-ran 19); deleted script 20. Lesson: anchor corridor endpoints on in-box best-habitat cells, not rep-points of partly-outside sites. **load_maps: 27 layers** (single LCP + WWF overlay).
+- **NEXT:** only remaining data = 2 m DEM/LiDAR for §7 tiles (when reached). Build/compose work: 5.1b viewpoints, §6 masterplan, §7 sites (have grid_1km), §8, panel composition.
+
+---
 ## 2026-07-04 — Session 11 (DEM landed → 4.3 built)
 
 - **DEM fetch fixed + succeeded.** Root causes on Carlton's Mac: (1) scripts had Sonya's Windows BASE only → picker → **cancel crashed QGIS (SystemExit)**; (2) feeding the WCS layer to a `gdal:` algorithm wrote nothing (GDAL can't read the WCS provider); (3) 5 m over the whole box = 161 M px froze QGIS. Fixes: `BASES` list (Win+Mac), no picker/SystemExit; write via **`QgsRasterFileWriter`** (WCS-aware, tiles); default **RES = 25 m** → `01_DATA/DEM/dem_box.tif` (2801×2298) + hillshade + slope. (5 m/2 m reserved for §7/§8 tiles.)
@@ -23,7 +39,10 @@ _Living record. Newest entries at top. A fresh chat + this log ≈ full context.
   - ⚠ IDEAragón = **Aragón-only** → no Cataluña/national admin. 3.3 municipios frame ✓; 3.1/3.2 still want national admin + the **WWF corridor** (the one remaining §3 gap).
 - **SNCZI FLOOD added → 4.3 COMPLETE.** Carlton downloaded the right files (láminas T=100 + T=500, "Zonas Inundables asociadas a periodos de retorno") to `01_DATA/hydro/laminaspb-q{100,500}/`. `17_build_flood_43.py` clips to box → `03_PROCESSED/flood_43.fgb` (T=100 6,213 ha · T=500 7,337 ha, along Río Alcanadre + barrancos; Valcuerna ephemeral = not in SNCZI). Added `renderer_flood` + registry. **24 processed layers.**
 - **§4 now fully complete (4.1–4.6 + 4.x, all sub-maps).** §5 core done (5.1a, 5.2). §3.3 admin+Natura done.
-- **NEXT / only remaining data gap: WWF corridor** (vault, script 11) → finishes §3.1/3.2/3.4. Then map composition (Carlton) + optional 5.1b viewpoints, §6/§7/§8.
+- **VAULT EXPORT LANDED (script 11) → §3 unblocked.** Carlton ran `11_export_vault_layers.py`; `01_DATA/context/` now has: **corredores_prioritarios** (1,492-link WWF corridor net), **zonas_criticas** (17 WWF; "Valle del Ebro oriental" in box), espacios_h1/2/3 (habitat cores = the Monegros/Cinca sites), national municipios (61 in box, incl. Lleida) + provinces (3) + comunidades, grid_1km (**the 5 §7 sites**), poi. natura2000 here = redundant with ours.
+- **§3 CORRIDOR + CRITICAL POINTS built** (`18_build_corridor_3.py`): `corridor_3.fgb` (network + 5 study links flagged) + `zonas_criticas_34.fgb`. Added `renderer_corridor` + `renderer_zonas_criticas` + registry. **3.1 preview = Spain + full corridor net + study links highlighted** = the brief's national map. **26 processed layers.**
+- ⚠ Corridor = WWF/LCP connectivity network (Link_ID/From_Core/To_Core), not a named-polygon layer — if teacher wants the literal "Sierras Litorales del Mediterráneo" named corridor, confirm it's this product.
+- **STATUS: §3 + §4 + §5-core all data-complete.** All self-serve data is IN (DEM, admin, flood, corridor). Remaining = build/compose work: 5.1b viewpoints, 5.1c sections (need 2 m DEM), §6 masterplan, §7 (have 5 grid sites) / §8, + Carlton's panel composition. `grid_1km` gives the 5 §7 intervention sites.
 
 ---
 ## 2026-07-04 — Session 10 (self-serve downloads via Chrome → 4.6 completed + §3 started)

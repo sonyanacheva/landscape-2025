@@ -13,10 +13,10 @@ _Status: ☐ todo · ◐ in progress · ☑ done · ⏸ later/out-of-sprint. Own
 ## PANEL A0-1 — CONTEXT & TERRITORY (§3–§4)
 
 ### §3 Work area in the Iberian corridor network
-- ☐ **3.1** Spain map, all corridors, **highlight "Sierras Litorales del Mediterráneo"** (Cataluña+Aragón). Scale ~1:3,000,000. _Data: WWF corridor + IGN base._ [C map / S style]
-- ☐ **3.2** Cataluña–Aragón zoom, main territorial units, locate work area. ~1:500,000. [C/S]
+- ◐ **3.1** Spain map, all corridors, **highlight "Sierras Litorales del Mediterráneo"** (Cataluña+Aragón). Scale ~1:3,000,000. _Data: WWF corridor + IGN base._ **DATA DONE** → `03_PROCESSED/corridor_3.fgb` (1,492-link WWF network, **5 study-area links highlighted**) + `countries_iberia_31.fgb` + provinces. _(Note: corridor = the WWF/LCP connectivity network; if teacher wants the specifically-named "Sierras Litorales del Mediterráneo" polygon, confirm it's this or a separate WWF product.)_ [C map ✓ / K style]
+- ◐ **3.2** Cataluña–Aragón zoom, main territorial units, locate work area. ~1:500,000. **DATA READY** — corridor + provinces (Huesca/Zaragoza/Lleida) + comunidades + AOS frame. [C ✓ / K compose]
 - ◐ **3.3** Work area (Candasnos) + **Natura 2000** — legend with site **ID, name, hectares**; main cities; river. ~1:50,000. **DATA DONE** → `03_PROCESSED/natura2000_box.fgb` (18 sites by designation) + **auto-ha legend** `00_ADMIN/natura2000_legend.csv` (incl. Valcuerna 35,338 ha). Still needs towns + river overlay + AOS frame at compose. [C data+ha ✓ / K style]
-- ☐ **3.4** Work-area **critical points** — obvious corridor discontinuities + Natura 2000 sites **requiring connection**. _Barriers = canals, roads, rail._ [C/S]
+- ◐ **3.4** Work-area **critical points** — obvious corridor discontinuities + Natura 2000 sites **requiring connection**. _Barriers = canals, roads, rail._ **DATA DONE** → `zonas_criticas_34.fgb` (WWF "Valle del Ebro oriental") + barriers/crossings (4.4) + corridor + Natura (3.3). Carlton composes the discontinuity callouts. [C ✓ / K compose]
 
 ### §4 Territorial analysis  (frame = AREA OF STUDY, square hugging the two rectangles — extent TBC)
 - ◐ **4.1 Hydrography** — rivers, streams, drainage, ridges, Valcuerna. _Have: CHE Ebro layers + DEM streams. Restyle._ **DATA DONE** → `03_PROCESSED/hydro_{lines,water,springs}_41.fgb` (box-clipped; **Valcuerna spine 35.4 km extracted + highlighted**; lagoons/saladas, springs, canals). Ridges + DEM streams pending 5 m DEM. Carlton composes/styles/exports. [C process ✓ / K style]
@@ -31,10 +31,10 @@ _Status: ☐ todo · ◐ in progress · ☑ done · ⏸ later/out-of-sprint. Own
 ## PANEL A0-2 — DIAGNOSIS & STRATEGY (§5–§6)
 
 ### §5 Species-specific ecological diagnosis
-- ◐ **5.1a Lynx + rabbit habitat** — differentiated colours. _Rebuild on SIGPAC/MFE base._ **DATA DONE** → `03_PROCESSED/habitat_51a.fgb` (ecotone/cover/foraging/matrix; ~99,128 ha effective lynx habitat, 26,775 ha optimal ecotone). Method + caveats: `PROGRESS/METHOD_habitat_resistance_5.md`. [C ✓ / K style]
+- ◐ **5.1a Lynx + rabbit habitat** — differentiated colours. _Rebuild on SIGPAC/MFE base._ **DATA DONE** → `03_PROCESSED/habitat_51a.tif` (categorical raster on **combined SIGPAC+MFE base**; adds Riparian corridor + Wetland/salada; **~116,300 ha effective lynx habitat**, 36,795 ha optimal ecotone). Method + caveats: `PROGRESS/METHOD_habitat_resistance_5.md`. [C ✓ / K style]
 - ☐ **5.1b Lynx-path storyboard** — numbered path; each view **classified**: ecotone, ravine, large-river crossing, habitat discontinuity, barrier; **opportunities**: hedgerow, un-ploughed field corners (machine turn-circles), Small Woody Features. _LCP in QGIS → viewpoints → ChatGPT renders._ [C locate+classify / S+ChatGPT render]
 - ☐ **5.1c Ecological sections** — typologies, elevation change, **tree/scrub cover heights**. _Needs finer DEM (2 m) + canopy height raster._ [C/S]
-- ◐ **5.2 Resistance map** — lynx-specific friction + **rabbit availability as conditional permeability** (matrix cells with rabbits = lower resistance; explains "out-of-habitat but visited"). _Have resistance surface (CORINE) → re-run on new base; re-run LCP._ **DATA DONE** → `03_PROCESSED/resistance_52.tif` (land cover × slope + barrier walls) + `corridor_lcp_52.fgb` (**92 km LCP, Alcubierre ↔ Valcuerna**) + `corridor_swath_52.tif` (26,449 ha band). Values = first pass, review vs literature (see METHOD doc). [C ✓ / K style]
+- ◐ **5.2 Resistance map** — lynx-specific friction + **rabbit availability as conditional permeability** (matrix cells with rabbits = lower resistance; explains "out-of-habitat but visited"). _Have resistance surface (CORINE) → re-run on new base; re-run LCP._ **DATA DONE** → `03_PROCESSED/resistance_52.tif` (combined base × slope + barrier walls) + `corridor_lcp_52.fgb` (**93 km LCP, Alcubierre ↔ Valcuerna**; matches 4/5 WWF links) + `corridor_swath_52.tif` (19,722 ha band). Values = first pass, review vs literature (see METHOD doc). [C ✓ / K style]
 
 ### §6 Masterplan — the intervention strategy
 - ☐ **6a Masterplan** — reactivate the dried **Barranco de Valcuerna** as **ecological spine**; show patches, connectors, interventions, **Hondo de la Hunilla** reconnection (currently cut off by intensive agri machinery → add wildlife infrastructure link). [C/S]

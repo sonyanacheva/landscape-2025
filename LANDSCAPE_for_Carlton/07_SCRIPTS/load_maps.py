@@ -149,23 +149,15 @@ def renderer_municipios():  return _outline("#9A8C98", 0.12)   # 3.3 work-area m
 def renderer_provinces():   return _outline("#6D6875", 0.35)   # province boundaries
 def renderer_comunidades(): return _outline("#403A44", 0.55)   # Aragón boundary
 
-def renderer_habitat():
-    # 5.1a lynx + rabbit habitat — greens = habitat (ecotone/cover/foraging), warm = matrix.
-    CLASSES = [
-        ("Lynx + rabbit optimal (ecotone)", "#238B45"),
-        ("Lynx cover (scrub/forest)",       "#74C476"),
-        ("Rabbit foraging (open)",          "#C7E9C0"),
-        ("Matrix (permeable)",              "#F0EAD2"),
-        ("Matrix (hostile)",                "#E6C2B3"),
-        ("Non-habitat",                     "#E8E8E8"),
-    ]
-    cats = [QgsRendererCategory(v, QgsFillSymbol.createSimple(
-        {"color": c, "outline_color": "#00000018", "outline_width": "0.03"}), v) for v, c in CLASSES]
-    return QgsCategorizedSymbolRenderer("habitat", cats)
-
 def renderer_lcp():
-    # 5.2 least-cost corridor path (single line).
+    # 5.2 our least-cost corridor (Valcuerna ↔ Alcubierre) from the resistance surface.
     sym = QgsLineSymbol.createSimple({"line_color": "#7A0000", "line_width": "1.4", "capstyle": "round"})
+    return QgsSingleSymbolRenderer(sym)
+
+def renderer_wwf():
+    # 5.2 WWF priority corridor — REFERENCE overlay (dashed) to validate our network against.
+    sym = QgsLineSymbol.createSimple({"line_color": "#6A51A3", "line_width": "1.0",
+                                      "line_style": "dash", "customdash": "4;2", "use_custom_dash": "1"})
     return QgsSingleSymbolRenderer(sym)
 
 def renderer_flood():
@@ -255,6 +247,24 @@ def renderer_natura():
         cats.append(QgsRendererCategory(val, sym, val))
     return QgsCategorizedSymbolRenderer("tipo", cats)
 
+def renderer_corridor():
+    # §3.1/3.2 WWF priority corridor network — study-area links highlighted.
+    STYLES = [
+        ("Corridor through study area", "#D7301F", 1.4),
+        ("Priority corridor network",  "#9E9AC8", 0.4),
+    ]
+    cats = [QgsRendererCategory(v, QgsLineSymbol.createSimple(
+        {"line_color": c, "line_width": str(w), "capstyle": "round"}), v) for v, c, w in STYLES]
+    return QgsCategorizedSymbolRenderer("clase", cats)
+
+def renderer_zonas_criticas():
+    # §3.4 WWF critical zones — study-area zone emphasised.
+    CLASSES = [("Critical zone (study area)", "217,95,14,70", "#8C2D04"),
+               ("Critical zone (national)",   "253,208,162,45", "#D9954B")]
+    cats = [QgsRendererCategory(v, QgsFillSymbol.createSimple(
+        {"color": c, "outline_color": o, "outline_width": "0.3"}), v) for v, c, o in CLASSES]
+    return QgsCategorizedSymbolRenderer("clase", cats)
+
 def renderer_countries():
     # §3.1 national backdrop — Spain highlighted, neighbours muted.
     es = QgsFillSymbol.createSimple({"color": "#EFE7D3", "outline_color": "#7A6A55", "outline_width": "0.2"})
@@ -279,11 +289,13 @@ MAPS = [
     {"file": "human_pressure_44.fgb","name": "4.4 Human-pressure zone",        "group": "4.4 HUMAN PRESSURE & BARRIERS", "renderer": renderer_human_pressure},
     {"file": "streams_43.fgb",       "name": "4.3 Drainage network",           "group": "4.3 FLOW & EROSION",       "renderer": renderer_streams},
     {"file": "flood_43.fgb",         "name": "4.3 Flood zones (SNCZI)",        "group": "4.3 FLOW & EROSION",       "renderer": renderer_flood},
-    {"file": "habitat_51a.fgb",      "name": "5.1a Lynx + rabbit habitat",     "group": "5.1a HABITAT",             "renderer": renderer_habitat},
+    {"file": "corridor_wwf_52.fgb",  "name": "5.2 WWF corridor (reference)",   "group": "5.2 RESISTANCE & CORRIDOR","renderer": renderer_wwf},
     {"file": "corridor_lcp_52.fgb",  "name": "5.2 Least-cost corridor",        "group": "5.2 RESISTANCE & CORRIDOR","renderer": renderer_lcp},
     {"file": "comunidades_3.fgb",    "name": "3.x Aragón boundary",            "group": "3.x ADMIN BOUNDARIES",    "renderer": renderer_comunidades},
     {"file": "provinces_3.fgb",      "name": "3.x Provinces",                  "group": "3.x ADMIN BOUNDARIES",    "renderer": renderer_provinces},
     {"file": "municipios_box_33.fgb","name": "3.3 Municipios (work area)",      "group": "3.x ADMIN BOUNDARIES",    "renderer": renderer_municipios},
+    {"file": "corridor_3.fgb",       "name": "3.1 WWF priority corridors",     "group": "3.1 CONTEXT",              "renderer": renderer_corridor},
+    {"file": "zonas_criticas_34.fgb","name": "3.4 Critical zones (WWF)",       "group": "3.4 CRITICAL POINTS",      "renderer": renderer_zonas_criticas},
 ]
 
 # ---- RASTERS (loaded + pseudocolour-styled; add one line per raster) ----------
@@ -295,7 +307,14 @@ RASTERS = [
     {"file": "resistance_52.tif",     "name": "5.2 Resistance surface",     "group": "5.2 RESISTANCE & CORRIDOR",
      "colors": ["#1a9850", "#a6d96a", "#ffffbf", "#fdae61", "#d73027"], "vmin": 1, "vmax": 80},
     {"file": "corridor_swath_52.tif", "name": "5.2 Corridor swath",         "group": "5.2 RESISTANCE & CORRIDOR",
-     "colors": ["#6a51a3", "#9e9ac8", "#dadaeb"]},
+     "colors": ["#54278f", "#9e9ac8", "#dadaeb"]},
+    {"file": "corridor_wwf_swath_52.tif", "name": "5.2 WWF corridor zone",  "group": "5.2 RESISTANCE & CORRIDOR",
+     "colors": ["#9e9ac8", "#cbc9e2", "#f2f0f7"], "vmin": 0, "vmax": 1500},
+    {"file": "habitat_51a.tif",       "name": "5.1a Lynx + rabbit habitat", "group": "5.1a HABITAT", "categories": [
+        (1, "#238B45", "Lynx + rabbit optimal (ecotone)"), (2, "#00A0A0", "Riparian corridor"),
+        (3, "#74C476", "Lynx cover (scrub/forest)"),       (4, "#C7E9C0", "Rabbit foraging (open)"),
+        (5, "#7EA6C4", "Wetland / salada"),                (6, "#F0EAD2", "Matrix (permeable)"),
+        (7, "#E6C2B3", "Matrix (hostile)"),                (8, "#E8E8E8", "Non-habitat")]},
 ]
 
 # =====================  ORCHESTRATOR (stable; no need to edit)  ================
@@ -329,48 +348,63 @@ def _find_loaded(path):
 def run():
     proc = os.path.join(_base(), PROCESSED_REL)
     root = QgsProject.instance().layerTreeRoot()
+    # drop orphans: layers pointing at a 03_PROCESSED file that no longer exists (superseded outputs)
+    procn = os.path.normcase(os.path.normpath(proc))
+    for lyr in list(QgsProject.instance().mapLayers().values()):
+        src = lyr.source().split("|")[0]
+        if src.startswith(("/", "\\")) or ":" in src[:3]:  # a file path
+            n = os.path.normcase(os.path.normpath(src))
+            if n.startswith(procn) and not os.path.exists(src):
+                nm, lid = lyr.name(), lyr.id()             # read BEFORE removing (wrapper dies after)
+                QgsProject.instance().removeMapLayer(lid); print("removed orphan:", nm)
     for m in MAPS:
         path = os.path.join(proc, m["file"])
         if not os.path.exists(path):
             print("SKIP (file missing):", m["file"]); continue
-        lyr = _find_loaded(path)
-        already = lyr is not None
-        if already and not RESTYLE_LOADED:
-            print("SKIP (already loaded):", m["name"]); continue
-        if not already:
-            lyr = QgsVectorLayer(path, m["name"], "ogr")
-            if not lyr.isValid():
-                print("FAIL (invalid layer):", path); continue
-        lyr.setRenderer(m["renderer"]())                 # apply style
+        old = _find_loaded(path)
+        if old is not None:
+            if not RESTYLE_LOADED:
+                print("SKIP (already loaded):", m["name"]); continue
+            QgsProject.instance().removeMapLayer(old.id())   # drop stale → reload fresh (data + style)
+        lyr = QgsVectorLayer(path, m["name"], "ogr")
+        if not lyr.isValid():
+            print("FAIL (invalid layer):", path); continue
+        lyr.setRenderer(m["renderer"]())
         qml = os.path.splitext(path)[0] + ".qml"
         lyr.saveNamedStyle(qml)                           # 1) write .qml
-        lyr.loadNamedStyle(qml)                           # 2) load .qml back (QML = source of truth)
-        lyr.triggerRepaint()
-        if not already:
-            QgsProject.instance().addMapLayer(lyr, False)
-            grp = root.findGroup(m["group"]) or root.insertGroup(0, m["group"])
-            grp.addLayer(lyr)
-        print(("RESTYLED" if already else "LOADED") + " + QML saved:", m["name"])
+        lyr.loadNamedStyle(qml)                           # 2) load it back (QML = source of truth)
+        QgsProject.instance().addMapLayer(lyr, False)
+        grp = root.findGroup(m["group"]) or root.insertGroup(0, m["group"])
+        grp.addLayer(lyr)
+        print(("RELOADED" if old is not None else "LOADED") + " + QML:", m["name"])
 
     # ---- rasters (pseudocolour) — defensive: a raster hiccup won't break the vectors ----
     for r in RASTERS:
         path = os.path.join(proc, r["file"])
         if not os.path.exists(path):
             print("SKIP (raster missing):", r["file"]); continue
-        if _find_loaded(path):
-            print("SKIP (already loaded):", r["name"]); continue
+        old = _find_loaded(path)
+        if old is not None:
+            if not RESTYLE_LOADED:
+                print("SKIP (already loaded):", r["name"]); continue
+            QgsProject.instance().removeMapLayer(old.id())   # drop stale → reload fresh
         try:
             rl = QgsRasterLayer(path, r["name"])
             if not rl.isValid():
                 print("FAIL (invalid raster):", path); continue
-            stats = rl.dataProvider().bandStatistics(1)
-            lo = r.get("vmin", stats.minimumValue)
-            hi = r.get("vmax", stats.maximumValue)
-            cols = r["colors"]
-            items = [QgsColorRampShader.ColorRampItem(lo + (hi - lo) * i / (len(cols) - 1),
-                     QColor(c)) for i, c in enumerate(cols)]
             shader = QgsRasterShader(); ramp = QgsColorRampShader()
-            ramp.setColorRampType(QgsColorRampShader.Interpolated); ramp.setColorRampItemList(items)
+            if "categories" in r:                             # discrete categorical raster
+                items = [QgsColorRampShader.ColorRampItem(v, QColor(c), lab)
+                         for v, c, lab in r["categories"]]
+                ramp.setColorRampType(QgsColorRampShader.Exact)
+                ramp.setColorRampItemList(items)
+            else:                                             # continuous pseudocolour
+                stats = rl.dataProvider().bandStatistics(1)
+                lo = r.get("vmin", stats.minimumValue); hi = r.get("vmax", stats.maximumValue)
+                cols = r["colors"]
+                items = [QgsColorRampShader.ColorRampItem(lo + (hi - lo) * i / (len(cols) - 1),
+                         QColor(c)) for i, c in enumerate(cols)]
+                ramp.setColorRampType(QgsColorRampShader.Interpolated); ramp.setColorRampItemList(items)
             shader.setRasterShaderFunction(ramp)
             rl.setRenderer(QgsSingleBandPseudoColorRenderer(rl.dataProvider(), 1, shader))
             rl.triggerRepaint()

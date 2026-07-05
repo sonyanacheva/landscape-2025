@@ -8,7 +8,7 @@ For every processed layer in `03_PROCESSED\`, in one run, it:
 3. saves a `.qml` sidecar next to the `.fgb` and loads it back (so the `.qml` becomes the source of truth),
 4. drops it into its own layer group.
 
-It's safe to re-run — nothing duplicates.
+It's safe to re-run — nothing duplicates. **Re-running is a full refresh:** each layer is dropped and reloaded from disk, so both updated *data* and updated *styles* come through (and any superseded layer whose file was removed is cleaned up). Set `RESTYLE_LOADED = False` at the top if you'd rather leave already-loaded layers untouched.
 
 ## Run it (once per work session)
 1. Make sure the delivered `.fgb` files are in

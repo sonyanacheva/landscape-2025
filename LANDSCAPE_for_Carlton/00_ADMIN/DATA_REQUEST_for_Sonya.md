@@ -9,12 +9,11 @@ _What Claude needs to unblock the rest of Carlton's scope (§3, §4, §5). CRS e
 ## ★ PRIORITY 1 — the two "master keys" (each unlocks a whole cluster)
 
 ### DEM 5 m  → unlocks 4.1 streams, 4.3 flow/erosion, 5.1c sections, 5.2 resistance
-- **Fresh download.** QGIS ▸ Layer ▸ Add ▸ **WCS** ▸ new connection:
-  `https://icearagon.aragon.es/arcgis/services/AragonReferencia/mde/MapServer/WCSServer?request=GetCapabilities&service=WCS&version=1.0.0`
-  → pick the **5 m DTM** → set extent to the box → **Save as GeoTIFF** into `01_DATA\DEM\`.
+- **Just run `07_SCRIPTS\10_fetch_dem5m_wcs.py`** in QGIS (Python Console ▸ open ▸ Run). It connects the Aragón WCS, clips to the box, saves `01_DATA\DEM\dem_5m_box.tif` + hillshade + slope. If it errors on the coverage id or size, the script prints the GetCapabilities URL + fallbacks. **Send `dem_5m_box.tif` back.**
 
 ### Vault export bundle  → unlocks all of §3, plus 4.1 and 4.2
-Export these from `QGIS_007.qgz` into `01_DATA\context\` (EPSG:25830, GeoPackage):
+- **Just run `07_SCRIPTS\11_export_vault_layers.py`** with the **old vault `QGIS_007.qgz` open** — it fuzzy-matches and exports the layers below to `01_DATA\context\` (reprojected to 25830). Check its MISSING list at the end and tweak name substrings if needed. Then zip `01_DATA\context\` back.
+Layers it exports (for reference):
 1. **Priority corridors** — `corredores_prioritarios` (the WWF/priority network, includes *"Sierras Litorales del Mediterráneo"*). → 3.1, 3.2
 2. **Natura 2000 Aragón** — LIC/ZEC + ZEPA **and** `ESPACIOS_H1–H3`. **Keep the site-code and site-name fields** (needed for the auto-ha legend). → 3.3, 3.4
 3. **Administrative boundaries** — CCAA + provinces (+ municipios if a separate layer). → 3.1–3.4

@@ -13,11 +13,18 @@
 # TO ADD A MAP:       add one renderer_*() function + one line in the MAPS registry.
 import os
 from qgis.core import (QgsVectorLayer, QgsProject, QgsCategorizedSymbolRenderer,
-                       QgsRendererCategory, QgsFillSymbol, QgsLineSymbol)
+                       QgsRendererCategory, QgsFillSymbol, QgsLineSymbol, QgsMarkerSymbol,
+                       QgsRasterLayer, QgsSingleBandPseudoColorRenderer, QgsRasterShader,
+                       QgsColorRampShader, QgsSingleSymbolRenderer)
+from qgis.PyQt.QtGui import QColor
 
 # --- config -------------------------------------------------------------------
 # Edit BASE once if the repo moves. Falls back to the saved .qgz project folder.
-BASE = r"C:\Users\Sonya\Desktop\Work_Vault\_Github\New folder\landscape-2025\LANDSCAPE_for_Carlton"
+# Known repo locations, one per machine. Add yours here if it differs — no need to edit anything else.
+BASES = [
+    r"C:\Users\Sonya\Desktop\Work_Vault\_Github\New folder\landscape-2025\LANDSCAPE_for_Carlton",  # Sonya (Windows)
+    "/Users/carltonfuturity/Developer/Github/landscape-2025/LANDSCAPE_for_Carlton",                # Carlton (Mac)
+]
 PROCESSED_REL  = "03_PROCESSED"
 RESTYLE_LOADED = True   # re-apply styles to already-loaded layers on re-run (propagates edits)
 
@@ -66,15 +73,15 @@ def renderer_forest():
     # Agriculture is 4.5's job -> muted to a single context class (drawn as backdrop).
     # ⚠️ MFE = Huesca only; Zaragoza strip is blank until MFE50_50 is sourced.
     CLASSES = [
-        ("Forest (natural)",                            "#2E5A32", 22980),
-        ("Forest (plantation)",                         "#6E9B5A",  5427),
-        ("Riparian woodland (riberas)",                 "#3E8E7E",  2678),
-        ("Scrub (matorral)",                            "#C2A15E", 15687),
-        ("Grassland–scrub mosaic",                      "#CBBE7A", 24478),
-        ("Grassland (natural)",                         "#D9E4A5",   217),
-        ("Wetland (humedal)",                           "#7EA6C4",   337),
-        ("Bare / sparse",                               "#CFC3AE",    29),
-        ("Non-forest context (agri/artificial/water)",  "#ECECEC", 221747),
+        ("Forest (natural)",                            "#2E5A32", 36853),
+        ("Forest (plantation)",                         "#6E9B5A",  5730),
+        ("Riparian woodland (riberas)",                 "#3E8E7E",  2719),
+        ("Scrub (matorral)",                            "#C2A15E", 19396),
+        ("Grassland–scrub mosaic",                      "#CBBE7A", 33470),
+        ("Grassland (natural)",                         "#D9E4A5",   257),
+        ("Wetland (humedal)",                           "#7EA6C4",  1056),
+        ("Bare / sparse",                               "#CFC3AE",    38),
+        ("Non-forest context (agri/artificial/water)",  "#ECECEC", 284039),
     ]
     cats = []
     for val, col, ha in CLASSES:
@@ -101,26 +108,216 @@ def renderer_canada_lc():
         cats.append(QgsRendererCategory(val, sym, f"{val}  ({km:,} km)"))
     return QgsCategorizedSymbolRenderer("readiness", cats)
 
+def renderer_barriers():
+    # 4.4 barriers — corridor-fragmenting infrastructure, severity by colour/weight.
+    STYLES = [
+        ("Motorway / autovía",      "#B2182B", 1.3, None),
+        ("Railway (incl. HS line)", "#542788", 1.0, "4;2"),
+        ("Main road (N / primary)", "#EF6548", 0.8, None),
+        ("Canal",                   "#2171B5", 0.8, None),
+        ("Other major road",        "#FDAE61", 0.5, None),
+    ]
+    cats = []
+    for val, col, w, dash in STYLES:
+        props = {"line_color": col, "line_width": str(w), "capstyle": "round", "joinstyle": "round"}
+        if dash:
+            props.update({"line_style": "dash", "customdash": dash, "use_custom_dash": "1"})
+        cats.append(QgsRendererCategory(val, QgsLineSymbol.createSimple(props), val))
+    return QgsCategorizedSymbolRenderer("barrier_type", cats)
+
+def renderer_crossings():
+    # 4.4 crossing catalogue — RED triangle = open cut (needs structure), green = has one.
+    open_s = QgsMarkerSymbol.createSimple({"name": "triangle", "color": "#B2182B",
+                                           "outline_color": "#FFFFFF", "outline_width": "0.3", "size": "3.6"})
+    has_s  = QgsMarkerSymbol.createSimple({"name": "circle", "color": "#1A9850",
+                                           "outline_color": "#FFFFFF", "outline_width": "0.3", "size": "3.0"})
+    cats = [QgsRendererCategory("Open barrier (no structure)", open_s, "Open barrier — needs crossing"),
+            QgsRendererCategory("Has bridge/tunnel", has_s, "Has bridge/tunnel")]
+    return QgsCategorizedSymbolRenderer("structure", cats)
+
+def renderer_human_pressure():
+    # 4.4 human-pressure envelope — translucent tint.
+    sym = QgsFillSymbol.createSimple({"color": "178,24,43,40", "outline_color": "178,24,43,110",
+                                      "outline_width": "0.1"})
+    return QgsCategorizedSymbolRenderer("zone", [QgsRendererCategory("250 m human-pressure zone", sym, "250 m human-pressure zone")])
+
+def _outline(color, width):
+    return QgsSingleSymbolRenderer(QgsFillSymbol.createSimple(
+        {"style": "no", "outline_color": color, "outline_width": str(width)}))
+
+def renderer_municipios():  return _outline("#9A8C98", 0.12)   # 3.3 work-area municipios (enable labels on 'nombre')
+def renderer_provinces():   return _outline("#6D6875", 0.35)   # province boundaries
+def renderer_comunidades(): return _outline("#403A44", 0.55)   # Aragón boundary
+
+def renderer_habitat():
+    # 5.1a lynx + rabbit habitat — greens = habitat (ecotone/cover/foraging), warm = matrix.
+    CLASSES = [
+        ("Lynx + rabbit optimal (ecotone)", "#238B45"),
+        ("Lynx cover (scrub/forest)",       "#74C476"),
+        ("Rabbit foraging (open)",          "#C7E9C0"),
+        ("Matrix (permeable)",              "#F0EAD2"),
+        ("Matrix (hostile)",                "#E6C2B3"),
+        ("Non-habitat",                     "#E8E8E8"),
+    ]
+    cats = [QgsRendererCategory(v, QgsFillSymbol.createSimple(
+        {"color": c, "outline_color": "#00000018", "outline_width": "0.03"}), v) for v, c in CLASSES]
+    return QgsCategorizedSymbolRenderer("habitat", cats)
+
+def renderer_lcp():
+    # 5.2 least-cost corridor path (single line).
+    sym = QgsLineSymbol.createSimple({"line_color": "#7A0000", "line_width": "1.4", "capstyle": "round"})
+    return QgsSingleSymbolRenderer(sym)
+
+def renderer_flood():
+    # 4.3 SNCZI flood zones — translucent blues; T=500 (broader) under T=100.
+    CLASSES = [("T=500 (excepcional)", "158,202,225,90"), ("T=100 (ocasional)", "66,146,198,110")]
+    cats = [QgsRendererCategory(v, QgsFillSymbol.createSimple(
+        {"color": c, "outline_color": "#2171B5", "outline_width": "0.05"}), v) for v, c in CLASSES]
+    return QgsCategorizedSymbolRenderer("periodo", cats)
+
+def renderer_streams():
+    # 4.3 drainage network — width hierarchy by contributing area.
+    STYLES = [
+        ("Main barranco",     "#08306B", 1.3),
+        ("Secondary channel", "#3182BD", 0.7),
+        ("Minor drainage",    "#9ECAE1", 0.3),
+    ]
+    cats = [QgsRendererCategory(v, QgsLineSymbol.createSimple(
+        {"line_color": c, "line_width": str(w), "capstyle": "round"}), v) for v, c, w in STYLES]
+    return QgsCategorizedSymbolRenderer("clase", cats)
+
+def renderer_geomorph():
+    # 4.2 Geomorphology (GEODE) — 58 units → 11 landform classes, earth tones,
+    # gypsum + mudstone badlands foregrounded (the Monegros signature), salada highlighted.
+    CLASSES = [
+        ("Gypsum badlands (yesos)",     "#B7A6C9"),
+        ("Mudstone badlands (lutitas)", "#C8A96A"),
+        ("Sandstone / paleochannel",    "#C0714B"),
+        ("Limestone / marl platform",   "#CFCBBE"),
+        ("Glacis / pediment",           "#D8C98E"),
+        ("River terrace / fan",         "#E3D6A0"),
+        ("Alluvial valley floor",       "#C6D2A0"),
+        ("Colluvium / slope deposit",   "#B58C64"),
+        ("Endorheic basin / salada",    "#E3B7C0"),
+        ("Water body",                  "#9EC5E8"),
+        ("Other",                       "#EDEDED"),
+    ]
+    cats = []
+    for val, col in CLASSES:
+        sym = QgsFillSymbol.createSimple({"color": col, "outline_color": "#00000022", "outline_width": "0.04"})
+        cats.append(QgsRendererCategory(val, sym, val))
+    return QgsCategorizedSymbolRenderer("geomorph", cats)
+
+def renderer_hydro_lines():
+    # 4.1 Hydrography lines — Valcuerna spine drawn boldest (the §6 ecological spine).
+    STYLES = [
+        ("Barranco de Valcuerna (spine)",  "#08306B", 1.4, None),
+        ("Main river",                     "#2171B5", 0.8, None),
+        ("Natural drainage (seasonal)",    "#6BAED6", 0.4, None),
+        ("Artificial drainage (acequias)", "#9ECAE1", 0.3, "3;1.5"),
+    ]
+    cats = []
+    for val, col, w, dash in STYLES:
+        props = {"line_color": col, "line_width": str(w), "capstyle": "round", "joinstyle": "round"}
+        if dash:
+            props.update({"line_style": "dash", "customdash": dash, "use_custom_dash": "1"})
+        cats.append(QgsRendererCategory(val, QgsLineSymbol.createSimple(props), val))
+    return QgsCategorizedSymbolRenderer("hydro_class", cats)
+
+def renderer_hydro_water():
+    # 4.1 water bodies — lagoons/saladas, reservoirs, main canals (fills).
+    CLASSES = [("Lagoon / salada", "#C6DBEF"), ("Reservoir", "#4292C6"), ("Main canal", "#2171B5")]
+    cats = []
+    for val, col in CLASSES:
+        sym = QgsFillSymbol.createSimple({"color": col, "outline_color": "#2171B5", "outline_width": "0.06"})
+        cats.append(QgsRendererCategory(val, sym, val))
+    return QgsCategorizedSymbolRenderer("hydro_class", cats)
+
+def renderer_hydro_springs():
+    # 4.1 springs — small points.
+    sym = QgsMarkerSymbol.createSimple({"name": "circle", "color": "#08519C",
+                                        "outline_color": "#FFFFFF", "outline_width": "0.2", "size": "1.4"})
+    cat = QgsRendererCategory("Spring", sym, "Spring")
+    return QgsCategorizedSymbolRenderer("hydro_class", [cat])
+
+def renderer_natura():
+    # §3.3 Natura 2000 — categorized by designation; semi-transparent fills so overlaps read.
+    CLASSES = [
+        ("ZEPA",             "166,217,106,90",  "#4D7A1F"),
+        ("LIC + ZEC",        "116,173,209,90",  "#2C5985"),
+        ("LIC + ZEC + ZEPA", "177,143,207,110", "#6A4A8E"),
+        ("LIC",              "116,173,209,90",  "#2C5985"),
+        ("Natura 2000",      "180,180,180,80",  "#666666"),
+    ]
+    cats = []
+    for val, fill, outline in CLASSES:
+        sym = QgsFillSymbol.createSimple({"color": fill, "outline_color": outline, "outline_width": "0.26"})
+        cats.append(QgsRendererCategory(val, sym, val))
+    return QgsCategorizedSymbolRenderer("tipo", cats)
+
+def renderer_countries():
+    # §3.1 national backdrop — Spain highlighted, neighbours muted.
+    es = QgsFillSymbol.createSimple({"color": "#EFE7D3", "outline_color": "#7A6A55", "outline_width": "0.2"})
+    other = QgsFillSymbol.createSimple({"color": "#F2F2F0", "outline_color": "#C8C8C8", "outline_width": "0.12"})
+    cats = [QgsRendererCategory("Spain", es, "Spain"), QgsRendererCategory("", other, "Neighbours")]
+    return QgsCategorizedSymbolRenderer("ADMIN", cats)
+
 # =====================  REGISTRY (one line per map)  ==========================
 MAPS = [
     {"file": "agri_matrix_45.fgb",   "name": "4.5 Agricultural matrix",        "group": "4.5 AGRICULTURAL MATRIX",  "renderer": renderer_agri},
     {"file": "canadas_4x.fgb",       "name": "4.x Cañadas (vías pecuarias)",   "group": "4.x CAÑADAS",              "renderer": renderer_canadas},
     {"file": "forest_46.fgb",        "name": "4.6 Forest / scrub / natural",   "group": "4.6 FOREST & NATURAL VEG", "renderer": renderer_forest},
     {"file": "canada_landcover.fgb", "name": "4.x-b Cañada × land cover",      "group": "4.x CAÑADAS",              "renderer": renderer_canada_lc},
+    {"file": "hydro_springs_41.fgb", "name": "4.1 Springs",                    "group": "4.1 HYDROGRAPHY",          "renderer": renderer_hydro_springs},
+    {"file": "hydro_lines_41.fgb",   "name": "4.1 Watercourses + Valcuerna",   "group": "4.1 HYDROGRAPHY",          "renderer": renderer_hydro_lines},
+    {"file": "hydro_water_41.fgb",   "name": "4.1 Water bodies",               "group": "4.1 HYDROGRAPHY",          "renderer": renderer_hydro_water},
+    {"file": "geomorph_42.fgb",      "name": "4.2 Geomorphology",              "group": "4.2 GEOMORPHOLOGY",        "renderer": renderer_geomorph},
+    {"file": "countries_iberia_31.fgb","name": "3.1 National backdrop",         "group": "3.1 CONTEXT",              "renderer": renderer_countries},
+    {"file": "natura2000_box.fgb",   "name": "3.3 Natura 2000 sites",          "group": "3.3 NATURA 2000",          "renderer": renderer_natura},
+    {"file": "crossings_44.fgb",     "name": "4.4 Crossing catalogue",         "group": "4.4 HUMAN PRESSURE & BARRIERS", "renderer": renderer_crossings},
+    {"file": "barriers_44.fgb",      "name": "4.4 Barriers",                   "group": "4.4 HUMAN PRESSURE & BARRIERS", "renderer": renderer_barriers},
+    {"file": "human_pressure_44.fgb","name": "4.4 Human-pressure zone",        "group": "4.4 HUMAN PRESSURE & BARRIERS", "renderer": renderer_human_pressure},
+    {"file": "streams_43.fgb",       "name": "4.3 Drainage network",           "group": "4.3 FLOW & EROSION",       "renderer": renderer_streams},
+    {"file": "flood_43.fgb",         "name": "4.3 Flood zones (SNCZI)",        "group": "4.3 FLOW & EROSION",       "renderer": renderer_flood},
+    {"file": "habitat_51a.fgb",      "name": "5.1a Lynx + rabbit habitat",     "group": "5.1a HABITAT",             "renderer": renderer_habitat},
+    {"file": "corridor_lcp_52.fgb",  "name": "5.2 Least-cost corridor",        "group": "5.2 RESISTANCE & CORRIDOR","renderer": renderer_lcp},
+    {"file": "comunidades_3.fgb",    "name": "3.x Aragón boundary",            "group": "3.x ADMIN BOUNDARIES",    "renderer": renderer_comunidades},
+    {"file": "provinces_3.fgb",      "name": "3.x Provinces",                  "group": "3.x ADMIN BOUNDARIES",    "renderer": renderer_provinces},
+    {"file": "municipios_box_33.fgb","name": "3.3 Municipios (work area)",      "group": "3.x ADMIN BOUNDARIES",    "renderer": renderer_municipios},
+]
+
+# ---- RASTERS (loaded + pseudocolour-styled; add one line per raster) ----------
+RASTERS = [
+    {"file": "erosion_spi_43.tif",    "name": "4.3 Erosion (stream power)", "group": "4.3 FLOW & EROSION",
+     "colors": ["#f7fcf0", "#c7e9b4", "#fed976", "#fd8d3c", "#bd0026"]},
+    {"file": "flowacc_43.tif",        "name": "4.3 Flow accumulation",      "group": "4.3 FLOW & EROSION",
+     "colors": ["#f7fbff", "#c6dbef", "#6baed6", "#2171b5", "#08306b"]},
+    {"file": "resistance_52.tif",     "name": "5.2 Resistance surface",     "group": "5.2 RESISTANCE & CORRIDOR",
+     "colors": ["#1a9850", "#a6d96a", "#ffffbf", "#fdae61", "#d73027"], "vmin": 1, "vmax": 80},
+    {"file": "corridor_swath_52.tif", "name": "5.2 Corridor swath",         "group": "5.2 RESISTANCE & CORRIDOR",
+     "colors": ["#6a51a3", "#9e9ac8", "#dadaeb"]},
 ]
 
 # =====================  ORCHESTRATOR (stable; no need to edit)  ================
 def _base():
-    cands = [BASE]
+    # Return a folder that actually contains 03_PROCESSED. Tries the saved-project folder
+    # first (works on any machine), then the known BASES. No folder-picker, no SystemExit
+    # (SystemExit crashes QGIS). If nothing matches, raise a normal error with guidance.
+    cands = []
     proj = QgsProject.instance().fileName()
     if proj:
         d = os.path.dirname(proj)
         cands += [d, os.path.join(d, "LANDSCAPE_for_Carlton"),
                   os.path.join(os.path.dirname(d), "LANDSCAPE_for_Carlton")]
+    cands += BASES
     for b in cands:
-        if os.path.isdir(os.path.join(b, PROCESSED_REL)):
+        if b and os.path.isdir(os.path.join(b, PROCESSED_REL)):
             return b
-    return BASE
+    raise Exception(
+        "load_maps: couldn't find a folder containing '%s'. "
+        "Add this machine's path to the BASES list at the top of the script "
+        "(or save your .qgz inside the repo). Looked in: %s"
+        % (PROCESSED_REL, [c for c in cands if c]))
 
 def _find_loaded(path):
     target = os.path.normcase(os.path.normpath(path))
@@ -154,6 +351,35 @@ def run():
             grp = root.findGroup(m["group"]) or root.insertGroup(0, m["group"])
             grp.addLayer(lyr)
         print(("RESTYLED" if already else "LOADED") + " + QML saved:", m["name"])
+
+    # ---- rasters (pseudocolour) — defensive: a raster hiccup won't break the vectors ----
+    for r in RASTERS:
+        path = os.path.join(proc, r["file"])
+        if not os.path.exists(path):
+            print("SKIP (raster missing):", r["file"]); continue
+        if _find_loaded(path):
+            print("SKIP (already loaded):", r["name"]); continue
+        try:
+            rl = QgsRasterLayer(path, r["name"])
+            if not rl.isValid():
+                print("FAIL (invalid raster):", path); continue
+            stats = rl.dataProvider().bandStatistics(1)
+            lo = r.get("vmin", stats.minimumValue)
+            hi = r.get("vmax", stats.maximumValue)
+            cols = r["colors"]
+            items = [QgsColorRampShader.ColorRampItem(lo + (hi - lo) * i / (len(cols) - 1),
+                     QColor(c)) for i, c in enumerate(cols)]
+            shader = QgsRasterShader(); ramp = QgsColorRampShader()
+            ramp.setColorRampType(QgsColorRampShader.Interpolated); ramp.setColorRampItemList(items)
+            shader.setRasterShaderFunction(ramp)
+            rl.setRenderer(QgsSingleBandPseudoColorRenderer(rl.dataProvider(), 1, shader))
+            rl.triggerRepaint()
+            QgsProject.instance().addMapLayer(rl, False)
+            grp = root.findGroup(r["group"]) or root.insertGroup(0, r["group"])
+            grp.addLayer(rl)
+            print("LOADED raster:", r["name"])
+        except Exception as e:
+            print("raster style failed for", r["name"], "->", e)
     print("load_maps: done.")
 
 run()

@@ -51,6 +51,15 @@ gdf = gdf.to_crs(25830)
 gdf['agri_class'] = [reclass(u, c) for u, c in zip(gdf.uso_sigpac, gdf.coef_regadio)]
 gdf['ha'] = gdf['dn_surface'] / 10000.0        # authoritative SIGPAC area
 
+# --- simplify 3 m (mount-safe size) + repair geometry (QA: simplify can self-intersect) ---
+from shapely.validation import make_valid
+gdf['geometry'] = gdf.geometry.simplify(3.0, preserve_topology=True)
+inv = ~gdf.geometry.is_valid
+if inv.any():
+    gdf.loc[inv, 'geometry'] = gdf.loc[inv, 'geometry'].apply(make_valid)
+gdf = gdf[gdf.geometry.notna() & ~gdf.geometry.is_empty
+          & gdf.geometry.geom_type.isin(['Polygon', 'MultiPolygon'])]
+
 # --- write FlatGeobuf (mount-safe; .gpkg corrupts on synced mount) ----------
 gdf[['uso_sigpac','coef_regadio','agri_class','ha','geometry']].to_file(
     OUT, driver='FlatGeobuf', layer='agri')

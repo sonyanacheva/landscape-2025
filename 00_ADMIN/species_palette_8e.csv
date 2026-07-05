@@ -1,0 +1,32 @@
+zone,scientific_name,common_es,habit,drought,gypsum,salt,frost_risk,function,propagation,plant_window,notes
+Riparian core,Fraxinus angustifolia,Fresno,small tree,med,low,low,low,canopy/shade/bank hold,container,Nov-Feb,ravine-bottom water; protected species
+Riparian core,Populus alba,Álamo,tree,low,low,low,low,canopy,cutting,Dec-Feb,needs high water table (river interface)
+Riparian core,Populus nigra,Chopo,tree,low,low,low,low,canopy,cutting,Dec-Feb,needs high water table
+Riparian core,Salix purpurea,Sauce,shrub,low,low,low,low,bank stabilisation,cutting,Dec-Feb,channel edge; very fast from cuttings
+Riparian core,Salix neotricha,Sauce,shrub/tree,low,low,low,low,bank stabilisation,cutting,Dec-Feb,channel edge
+Riparian core,Tamarix gallica,Taray,shrub/tree,high,med,high,low,saline bank cover,cutting,Dec-Feb,NATIVE - not invasive T. ramosissima
+Riparian core,Tamarix africana,Taray,shrub/tree,high,med,high,low,saline bank cover,cutting,Dec-Feb,native Iberian tamarisk
+Riparian core,Tamarix canariensis,Taray,shrub/tree,high,med,high,low,saline bank cover,cutting,Dec-Feb,native Iberian tamarisk
+Riparian core,Nerium oleander,Adelfa,shrub,high,low,low,HIGH,dry-watercourse cover,container,Nov-Feb,frost-sensitive; marginal in Monegros winter
+Xeric shrub matrix,Ziziphus lotus,Arto / Azufaifo,mound shrub,high,med,med,med,KEYSTONE mound; rabbit refugia; fruit,container/seed,Nov-Jan,builds fertile mounds - lynx prey base
+Xeric shrub matrix,Retama sphaerocarpa,Retama,tall broom,high,med,low,low,N-fixer pioneer; nurse,container/seed,Nov-Jan,nitrogen fixer
+Xeric shrub matrix,Rhamnus lycioides,Espino negro,thorny shrub,high,low,low,low,nurse/facilitator; cover,container,Nov-Jan,thorny protective cover
+Xeric shrub matrix,Quercus coccifera,Coscoja,shrub,high,low,low,low,facilitator; evergreen cover,container,Nov-Jan,facilitates community assembly
+Xeric shrub matrix,Pistacia lentiscus,Lentisco,shrub,high,low,low,med,cover; berries; nurse,container,Nov-Jan,frost-marginal; ~36% survival at 3yr
+Xeric shrub matrix,Atriplex halimus,Orgaza / Salado,shrub,high,med,high,low,fast cover; forage,container,Nov-Jan,quick establishment on saline ground
+Gypsum specialist,Gypsophila struthium,Asnallo / Jabonera,sub-shrub,high,OBLIGATE,low,low,gypsum NURSE plant,seed,Oct-Nov,recovers degraded gypsum
+Gypsum specialist,Ononis tridentata,Garbancillo,sub-shrub,high,OBLIGATE,low,low,gypsum slope hold,seed,Oct-Nov,Iberian endemic gypsophyte
+Gypsum specialist,Lepidium subulatum,-,sub-shrub,high,OBLIGATE,low,low,gypsum crust coloniser,seed,Oct-Nov,gypsophyte
+Gypsum specialist,Helianthemum squamatum,Jarilla de escamas,sub-shrub,high,OBLIGATE,low,low,gypsum ground cover,seed,Oct-Nov,gypsophyte
+Gypsum specialist,Herniaria fruticosa,-,sub-shrub,high,high,low,low,gypsum cover,seed,Oct-Nov,gypsum sub-shrub
+Saladas fringe,Arthrocnemum macrostachyum,Sosa jabonera,succulent,med,low,EXTREME,low,salt-flat coloniser,natural/seed,natural,wettest highest-salt zone; do not plant woody
+Saladas fringe,Suaeda vera,Sosa,shrub,med,low,high,low,salt fringe,natural/seed,natural,high-salt fringe
+Saladas fringe,Salsola vermiculata,Sisallo,shrub,high,med,high,low,salt fringe; forage,seed,Oct-Nov,forage value
+Saladas fringe,Limonium spp.,Siempreviva / Saladilla,perennial,med,low,high,low,salt mid-fringe,natural/seed,natural,mid fringe
+Saladas fringe,Frankenia thymifolia,Tomillo sapero,sub-shrub,high,med,high,low,crust edge,natural/seed,natural,salt crust edge
+Steppe ground layer,Lygeum spartum,Albardín,grass,high,high,high,low,PIONEER; erosion control,seed/plug,Oct-Nov,salt+gypsum tolerant pioneer
+Steppe ground layer,Macrochloa tenacissima,Esparto / Atocha,grass,high,med,low,low,slope stabilisation,seed/plug,Oct-Nov,steppe bunchgrass
+Steppe ground layer,Stipa parviflora,-,grass,high,med,low,low,ground cover,seed,Oct-Nov,steppe grass
+Steppe ground layer,Salvia rosmarinus,Romero,aromatic shrub,high,low,low,low,cover; pollinators,container/seed,Oct-Dec,aromatic
+Steppe ground layer,Thymus vulgaris,Tomillo,aromatic sub-shrub,high,med,low,low,cover; pollinators,seed,Oct-Nov,aromatic
+Steppe ground layer,Artemisia herba-alba,Ontina,sub-shrub,high,med,med,low,steppe cover; forage,seed,Oct-Nov,steppe sub-shrub

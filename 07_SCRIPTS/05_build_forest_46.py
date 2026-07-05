@@ -15,7 +15,9 @@ import geopandas as gpd, pyogrio
 from shapely.geometry import box as shp_box
 warnings.filterwarnings('ignore')
 
-MFE = os.environ.get('MFE', '/tmp/mfe/mfe50_22.shp')
+# MFE ships per province. Pass colon-separated shapefiles (Huesca:Zaragoza) via MFE_FILES
+# to cover the whole box; falls back to the single Huesca file.
+MFE_FILES = os.environ.get('MFE_FILES', os.environ.get('MFE', '/tmp/mfe/mfe50_22.shp')).split(':')
 OUT = os.environ.get('OUT', 'forest_46.fgb')
 BOX = (714913, 4582331, 784950, 4639785)   # clip box (AOS + 2 km), EPSG:25830
 
@@ -37,7 +39,9 @@ CLASS = {
 }
 def reclass(d): return CLASS.get(d, 'Non-forest context (agri/artificial/water)')
 
-g = pyogrio.read_dataframe(MFE, bbox=BOX)              # EPSG:25830 already
+import pandas as pd
+parts = [pyogrio.read_dataframe(f, bbox=BOX) for f in MFE_FILES]   # EPSG:25830 already
+g = gpd.GeoDataFrame(pd.concat(parts, ignore_index=True), crs='EPSG:25830')
 clip = gpd.clip(g, shp_box(*BOX))
 clip = clip[~clip.geometry.is_empty & clip.geometry.notna()].copy()
 clip['clase'] = clip['DEFINICION'].map(reclass)
@@ -50,8 +54,8 @@ order = ['Forest (natural)', 'Forest (plantation)', 'Riparian woodland (riberas)
          'Scrub (matorral)', 'Grassland–scrub mosaic', 'Grassland (natural)',
          'Wetland (humedal)', 'Bare / sparse', 'Non-forest context (agri/artificial/water)']
 s = clip.groupby('clase')['ha'].sum()
-print('\n=== 4.6 Forest / scrub / natural veg — in-box (Huesca only) ===')
+print(f'\n=== 4.6 Forest / scrub / natural veg — in-box ({len(MFE_FILES)} MFE province file(s)) ===')
 for c in order:
     if c in s.index:
         print(f'{c:44} {s[c]:>11,.0f} ha')
-print(f'{"TOTAL (Huesca coverage)":44} {s.sum():>11,.0f} ha   polygons: {len(clip):,}')
+print(f'{"TOTAL":44} {s.sum():>11,.0f} ha   polygons: {len(clip):,}')

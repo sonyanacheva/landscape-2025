@@ -7,8 +7,12 @@
 import os, urllib.request, urllib.parse
 from qgis.core import (QgsVectorLayer, QgsVectorFileWriter, QgsProject)
 
-# Edit BASE once if the repo moves; OUT is derived from it.
-BASE = r"C:\Users\Sonya\Desktop\Work_Vault\_Github\New folder\landscape-2025\LANDSCAPE_for_Carlton"
+# Known repo locations, one per machine (first that exists wins). Add yours if it differs.
+BASES = [
+    r"C:\Users\Sonya\Desktop\Work_Vault\_Github\New folder\landscape-2025\LANDSCAPE_for_Carlton",  # Sonya (Windows)
+    "/Users/carltonfuturity/Developer/Github/landscape-2025/LANDSCAPE_for_Carlton",                # Carlton (Mac)
+]
+BASE = next((b for b in BASES if os.path.isdir(os.path.join(b, "07_SCRIPTS"))), BASES[0])
 OUT  = os.path.join(BASE, "01_DATA", "infrastructure_osm")
 BBOX = "41.36,-0.41,41.86,0.41"   # S,W,N,E in EPSG:4326 = your study box
 os.makedirs(OUT, exist_ok=True)

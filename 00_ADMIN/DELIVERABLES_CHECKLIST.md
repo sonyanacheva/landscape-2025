@@ -15,26 +15,26 @@ _Status: ☐ todo · ◐ in progress · ☑ done · ⏸ later/out-of-sprint. Own
 ### §3 Work area in the Iberian corridor network
 - ☐ **3.1** Spain map, all corridors, **highlight "Sierras Litorales del Mediterráneo"** (Cataluña+Aragón). Scale ~1:3,000,000. _Data: WWF corridor + IGN base._ [C map / S style]
 - ☐ **3.2** Cataluña–Aragón zoom, main territorial units, locate work area. ~1:500,000. [C/S]
-- ☐ **3.3** Work area (Candasnos) + **Natura 2000** — legend with site **ID, name, hectares**; main cities; river. ~1:50,000. _Data: MITECO+IDEAragón. Auto-ha legend (script)._ [C data+ha / S style]
+- ◐ **3.3** Work area (Candasnos) + **Natura 2000** — legend with site **ID, name, hectares**; main cities; river. ~1:50,000. **DATA DONE** → `03_PROCESSED/natura2000_box.fgb` (18 sites by designation) + **auto-ha legend** `00_ADMIN/natura2000_legend.csv` (incl. Valcuerna 35,338 ha). Still needs towns + river overlay + AOS frame at compose. [C data+ha ✓ / K style]
 - ☐ **3.4** Work-area **critical points** — obvious corridor discontinuities + Natura 2000 sites **requiring connection**. _Barriers = canals, roads, rail._ [C/S]
 
 ### §4 Territorial analysis  (frame = AREA OF STUDY, square hugging the two rectangles — extent TBC)
-- ◐ **4.1 Hydrography** — rivers, streams, drainage, ridges, Valcuerna. _Have: CHE Ebro layers + DEM streams. Restyle._ [C/S]
-- ◐ **4.2 Geomorphology** — landforms, gypsum badlands, saladas. _Have: IGME GEODE. Add DEM geomorphons._ [C/S]
-- ◐ **4.3 Flow accumulation + erosion** — + flood zones (SNCZI). _Have: flow-accum + erosion index MAP1 built. Restyle; verify RUSLE logic._ [C/S]
-- ☐ **4.4 Human presence / barriers** — population, roads, rail, **canals**; **catalogue underpasses & bridges** (flag under-utilised / overkill; multiple bridges seen). _OSM + manual over orthophoto._ [S catalogue / C base]
+- ◐ **4.1 Hydrography** — rivers, streams, drainage, ridges, Valcuerna. _Have: CHE Ebro layers + DEM streams. Restyle._ **DATA DONE** → `03_PROCESSED/hydro_{lines,water,springs}_41.fgb` (box-clipped; **Valcuerna spine 35.4 km extracted + highlighted**; lagoons/saladas, springs, canals). Ridges + DEM streams pending 5 m DEM. Carlton composes/styles/exports. [C process ✓ / K style]
+- ◐ **4.2 Geomorphology** — landforms, gypsum badlands, saladas. _Have: IGME GEODE. Add DEM geomorphons._ **DATA DONE** → `03_PROCESSED/geomorph_42.fgb` (58 units → 10 landforms; **gypsum+mudstone badlands = 50% of box**; saladas highlighted). DEM geomorphons + hillshade context pending 5 m DEM. Carlton composes/styles/exports. [C process ✓ / K style]
+- ◐ **4.3 Flow accumulation + erosion** — + flood zones (SNCZI). **DATA DONE (from 25 m DEM)** → `03_PROCESSED/streams_43.fgb` (6,469 km drainage, 3 tiers: Main barranco 527 · Secondary 613 · Minor 5,328 km) + rasters `flowacc_43.tif` + `erosion_spi_43.tif` (Stream Power Index). ⚠ eastern ~8 km (Catalonia) outside Aragón DEM = masked. **SNCZI flood overlay DONE** → `03_PROCESSED/flood_43.fgb` (T=100 6,213 ha + T=500 7,337 ha, along Alcanadre + barrancos). **4.3 complete.** Carlton composes. [C process ✓ / K style]
+- ◐ **4.4 Human presence / barriers** — population, roads, rail, **canals**; **catalogue underpasses & bridges** (flag under-utilised / overkill; multiple bridges seen). _OSM + manual over orthophoto._ **DATA DONE** → `03_PROCESSED/barriers_44.fgb` (~1,241 km, classed) + `crossings_44.fgb` (**14/16 crossings = open cuts, no structure**) + `human_pressure_44.fgb` (250 m, 196 km²). Structure flags need ortho/field verification. Feeds 3.4. Carlton composes + manual catalogue pass. [C base ✓ / S+K catalogue verify]
 - ◐ **4.5 Agricultural matrix** — intensive / extensive / woody crops, **legend summing ha**. _REPLACE CORINE → **SIGPAC** real crops._ **DATA DONE** → `03_PROCESSED/agri_matrix_45.fgb` (9 classes, 298,434 parcels, PR kept as own ecotone class). Carlton composes/styles/exports. [C process+ha ✓ / K style]
-- ◐ **4.6 Forest / shrub / scrub / natural veg** — realistically proven, not generic. _REPLACE CORINE → **MFE + Copernicus Small Woody Features**._ **DATA DONE (Huesca only)** → `03_PROCESSED/forest_46.fgb` (9 classes on MFE `DEFINICION`; natural-veg ≈71,800 ha; riparian traces Valcuerna). ⚠️ needs **MFE50_50 (Zaragoza)** to fill box, then re-run. Carlton composes/styles/exports. [C process ✓ (partial) / S get MFE50_50 / K style]
+- ◐ **4.6 Forest / shrub / scrub / natural veg** — realistically proven, not generic. _REPLACE CORINE → **MFE + Copernicus Small Woody Features**._ **DATA DONE (WHOLE BOX — Huesca + Zaragoza)** → `03_PROCESSED/forest_46.fgb` (9 classes; natural-veg ≈99,500 ha; Forest 36,853 · Grassland–scrub mosaic 33,470 · Scrub 19,396 · Riparian 2,719 · Wetland/saladas 1,056). Carlton composes/styles/exports. [C process ✓ / K style]
 - ◐ **4.x Cañadas / vías pecuarias** — map protected public drover's roads (Ley 3/1995; cañada ≤75 m / cordel ≤37.5 m / vereda ≤20 m). **Triple use:** corridor+hedgerow backbone (§6), trekking/MTB ecotourism network (§6/§7), implementable on public land = no expropriation (stakeholder argument). **DATA DONE** → `03_PROCESSED/canadas_4x.fgb` from national RGVP 2024, clipped to box: **1,279 km** in-box (Cañada 437 · Vereda 365 · Cordel 248 · Colada 166 · sin clasificar 63) · **4,939 ha** implementable public corridor. Carlton composes/styles/exports. [C classify+quantify ✓ / K style]
 
 ---
 ## PANEL A0-2 — DIAGNOSIS & STRATEGY (§5–§6)
 
 ### §5 Species-specific ecological diagnosis
-- ☐ **5.1a Lynx + rabbit habitat** — differentiated colours. _Rebuild on SIGPAC/MFE base._ [C/S]
+- ◐ **5.1a Lynx + rabbit habitat** — differentiated colours. _Rebuild on SIGPAC/MFE base._ **DATA DONE** → `03_PROCESSED/habitat_51a.fgb` (ecotone/cover/foraging/matrix; ~99,128 ha effective lynx habitat, 26,775 ha optimal ecotone). Method + caveats: `PROGRESS/METHOD_habitat_resistance_5.md`. [C ✓ / K style]
 - ☐ **5.1b Lynx-path storyboard** — numbered path; each view **classified**: ecotone, ravine, large-river crossing, habitat discontinuity, barrier; **opportunities**: hedgerow, un-ploughed field corners (machine turn-circles), Small Woody Features. _LCP in QGIS → viewpoints → ChatGPT renders._ [C locate+classify / S+ChatGPT render]
 - ☐ **5.1c Ecological sections** — typologies, elevation change, **tree/scrub cover heights**. _Needs finer DEM (2 m) + canopy height raster._ [C/S]
-- ☐ **5.2 Resistance map** — lynx-specific friction + **rabbit availability as conditional permeability** (matrix cells with rabbits = lower resistance; explains "out-of-habitat but visited"). _Have resistance surface (CORINE) → re-run on new base; re-run LCP._ [C/S]
+- ◐ **5.2 Resistance map** — lynx-specific friction + **rabbit availability as conditional permeability** (matrix cells with rabbits = lower resistance; explains "out-of-habitat but visited"). _Have resistance surface (CORINE) → re-run on new base; re-run LCP._ **DATA DONE** → `03_PROCESSED/resistance_52.tif` (land cover × slope + barrier walls) + `corridor_lcp_52.fgb` (**92 km LCP, Alcubierre ↔ Valcuerna**) + `corridor_swath_52.tif` (26,449 ha band). Values = first pass, review vs literature (see METHOD doc). [C ✓ / K style]
 
 ### §6 Masterplan — the intervention strategy
 - ☐ **6a Masterplan** — reactivate the dried **Barranco de Valcuerna** as **ecological spine**; show patches, connectors, interventions, **Hondo de la Hunilla** reconnection (currently cut off by intensive agri machinery → add wildlife infrastructure link). [C/S]
@@ -58,7 +58,7 @@ _Status: ☐ todo · ◐ in progress · ☑ done · ⏸ later/out-of-sprint. Own
    - ☐ **P4** long-term vision — fully activated, bold but sensible, true to the arid ecology.
 - ☐ **8c Erosion mechanism** — name it right: surface runoff / sheet–rill–gully; water-harvesting + deep roots for infiltration.
 - ☐ **8d Flood-establishment method** — CORRECTED: rock-detention structures (check dams / one-rock dams / gully plugs) + seed pelleting/seed balls + flood-timed sowing (not the cork-tap method). [C verify sources]
-- ☐ **8e Planting calendar** — xeroriparian species × month; autumn–winter window. [C draft / S]
+- ◐ **8e Planting calendar** — xeroriparian species × month; autumn–winter window. **DRAFT DONE** → `00_ADMIN/REF_planting_palette_8e.md` + `species_palette_8e.csv` (31 verified native species across 5 gradient bands: riparian core, xeric shrub matrix, gypsum specialists, saladas fringe, steppe ground; species×month calendar; nurse-plant + water-harvesting techniques; caveats). Sonya/teacher to confirm + optional field check. [C draft ✓ / S confirm]
 
 ---
 ## FINAL / CROSS-CUTTING

@@ -5,7 +5,15 @@
 05_FIGMA_ASSEMBLY/
 06_DELIVERABLES/
 99_ARCHIVE_OLD/
-LANDSCAPE_for_Carlton/
+
+# Working mirror is not versioned — EXCEPT the map exports (PDF/PNG) in 09_EXPORTS.
+# (A parent dir excluded with a trailing slash can't have files re-included, so we
+#  ignore its *contents* with /* and then negate the export files step by step.)
+LANDSCAPE_for_Carlton/*
+!LANDSCAPE_for_Carlton/09_EXPORTS/
+LANDSCAPE_for_Carlton/09_EXPORTS/*
+!LANDSCAPE_for_Carlton/09_EXPORTS/*.pdf
+!LANDSCAPE_for_Carlton/09_EXPORTS/*.png
 
 # QGIS temp / backups
 *.qgz~

@@ -1,0 +1,4 @@
+# Map exports (PDF/PNG) are large binaries — stored via Git LFS so the repo stays light.
+# Only the latest version sits in the working tree; run `git lfs prune` to drop old local copies.
+LANDSCAPE_for_Carlton/09_EXPORTS/*.pdf filter=lfs diff=lfs merge=lfs -text
+LANDSCAPE_for_Carlton/09_EXPORTS/*.png filter=lfs diff=lfs merge=lfs -text

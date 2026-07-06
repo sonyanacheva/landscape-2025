@@ -309,3 +309,7 @@ _Living record. Newest entries at top. A fresh chat + this log ≈ full context.
 ## Per-map ortho opacity + dramatic hillshade (2026-07-06)
 - 27_print_maps.py: new per-map `ortho_opacity` (temporarily sets the "PNOA ortho" layer opacity, restored after export). Habitats now uses faint colour ortho (0.20) in place of hillshade; 3.4a + 3.4b bumped to 0.55 (context-heavy, sparse data); 3.3 stays 0.20.
 - load_maps.py: hillshade config now DRAMATIC (brightness -10, contrast +55, opacity 0.9, blend normal) — only used on the 4.1 hydrography map now, so the relief reads strongly (was washing out).
+
+## Git LFS for map exports (2026-07-06)
+- .gitignore: un-ignored LANDSCAPE_for_Carlton/09_EXPORTS/*.pdf + *.png (rest of the mirror stays ignored).
+- .gitattributes: 09_EXPORTS *.pdf/*.png stored via Git LFS. Exports were never committed as normal blobs (clean start; no migrate needed). User installs git-lfs + `git lfs install` once on their machine.

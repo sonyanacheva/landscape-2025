@@ -313,3 +313,10 @@ _Living record. Newest entries at top. A fresh chat + this log ≈ full context.
 ## Git LFS for map exports (2026-07-06)
 - .gitignore: un-ignored LANDSCAPE_for_Carlton/09_EXPORTS/*.pdf + *.png (rest of the mirror stays ignored).
 - .gitattributes: 09_EXPORTS *.pdf/*.png stored via Git LFS. Exports were never committed as normal blobs (clean start; no migrate needed). User installs git-lfs + `git lfs install` once on their machine.
+
+## Panel-1 full print set + contours + legend fix (2026-07-06)
+- 33_build_contours.py → contours_20m.fgb (1559 lines, 20-780m, index every 100m) from dem_box.
+- trails_human.fgb (8879 OSM tracks/paths, clipped to box) for the Human map.
+- load_maps.py: renderer_contours (idx categorized) + renderer_trails; registered both.
+- 27_print_maps.py: legend now COMPACT (Arial 8/6/5 fonts, 3mm swatches, tight margins, 2-col split >12 rows) — fixes overflow. Added 5 specs: 4_0_territorial (munis+water+contours over ortho), 4_2_geomorfologia, 4_4_humano (barriers+urban+cañadas+trails over ortho), 4_5_agricultura, 5_2_resistencia (B&W). Total 12 maps export.
+- PLAN_panels_maps.md: print status table + rework plans for #3 Natura (colour by ZEPA/LIC/ZEC, drop redundant espacios, label, thread corridor), #9 Habitat (collapse 8→5 clear classes), and Panel-2 synthesis map (base→corridor/cores→Valcuerna spine→interventions→barriers→labels) + sections note (need 2m DEM).

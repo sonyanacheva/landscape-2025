@@ -417,6 +417,18 @@ def renderer_springs_che():
     return QgsSingleSymbolRenderer(QgsMarkerSymbol.createSimple(
         {"name": "circle", "color": "#3E78B2", "outline_color": "#FFFFFF", "outline_width": "0.2", "size": "1.3"}))
 
+def renderer_contours():
+    # Territorial map — 20 m contours, index (100 m) heavier; muted brown so ortho reads through.
+    reg = QgsLineSymbol.createSimple({"line_color": "150,120,90,110", "line_width": "0.05"})
+    idx = QgsLineSymbol.createSimple({"line_color": "120,90,60,175", "line_width": "0.18"})
+    cats = [QgsRendererCategory(0, reg, "Contour (20 m)"), QgsRendererCategory(1, idx, "Index (100 m)")]
+    return QgsCategorizedSymbolRenderer("idx", cats)
+
+def renderer_trails():
+    # Human map — OSM tracks / paths (fine brown dashed).
+    return QgsSingleSymbolRenderer(QgsLineSymbol.createSimple(
+        {"line_color": "140,110,80,170", "line_width": "0.12", "line_style": "dash", "capstyle": "round"}))
+
 def renderer_countries():
     # §3.1 national backdrop — Spain highlighted, neighbours muted.
     es = QgsFillSymbol.createSimple({"color": "#EFE7D3", "outline_color": "#7A6A55", "outline_width": "0.2"})
@@ -496,6 +508,8 @@ MAPS = [
     {"file": "hydro_lines_che.fgb",    "name": "4.1 Water lines (by class)",     "group": "4.1 HYDROGRAPHY", "renderer": renderer_hydro_lines_che},
     {"file": "seasonal_drainage.fgb",  "name": "4.1 Seasonal barrancos",         "group": "4.1 HYDROGRAPHY", "renderer": renderer_seasonal},
     {"file": "springs_che.fgb",        "name": "4.1 Springs (CHE)",              "group": "4.1 HYDROGRAPHY", "renderer": renderer_springs_che},
+    {"file": "contours.fgb",           "name": "Contours (5 m)",                 "group": "4.2 GEOMORPHOLOGY", "renderer": renderer_contours},
+    {"file": "trails_human.fgb",       "name": "4.4 Trails (OSM tracks/paths)",  "group": "4.4 HUMAN PRESSURE & BARRIERS", "renderer": renderer_trails},
 ]
 
 # ---- RASTERS (loaded + pseudocolour-styled; add one line per raster) ----------

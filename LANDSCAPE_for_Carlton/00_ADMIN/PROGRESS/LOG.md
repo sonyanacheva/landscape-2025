@@ -320,3 +320,16 @@ _Living record. Newest entries at top. A fresh chat + this log ≈ full context.
 - load_maps.py: renderer_contours (idx categorized) + renderer_trails; registered both.
 - 27_print_maps.py: legend now COMPACT (Arial 8/6/5 fonts, 3mm swatches, tight margins, 2-col split >12 rows) — fixes overflow. Added 5 specs: 4_0_territorial (munis+water+contours over ortho), 4_2_geomorfologia, 4_4_humano (barriers+urban+cañadas+trails over ortho), 4_5_agricultura, 5_2_resistencia (B&W). Total 12 maps export.
 - PLAN_panels_maps.md: print status table + rework plans for #3 Natura (colour by ZEPA/LIC/ZEC, drop redundant espacios, label, thread corridor), #9 Habitat (collapse 8→5 clear classes), and Panel-2 synthesis map (base→corridor/cores→Valcuerna spine→interventions→barriers→labels) + sections note (need 2m DEM).
+
+## Habitat map readability rework (2026-07-06)
+- 34_build_habitat_clean.py: remap habitat_51a 8→4 classes, matrix/non-habitat→nodata(0)=transparent → habitat_clean.tif. (1 optimal ecotone, 2 lynx cover, 3 rabbit foraging, 4 riparian/wetland).
+- load_maps.py: habitat entry → habitat_clean.tif, 4 categories (optimal #1B7837, cover #6FA96B, foraging tan #C2914A, riparian/wetland teal #2E8B8B). Matrix transparent so ortho shows through.
+- 27_print_maps.py: habitat map order fixed — habitat raster now ABOVE the PNOA ortho (ortho was washing it); ortho_opacity 0.28. Preview habitats_v3_preview.png = clear 4-class read.
+- Contours regenerated at 5 m (interval param CINT; index 25 m), simplified → contours.fgb (16MB); renderer thinned; renamed layer "Contours (5 m)".
+
+## Corine-style habitat land-cover + handoff (2026-07-06)
+- Confirmed the reference habitat map's Corine land-cover base + its QML were NOT in anything Sonya shared (verified vs DATA_for_Carlton handoff README). Chosen path: approximate.
+- 35_build_natural_veg.py → natural_veg.fgb (93,037 polys, 6 classes: Forest/plantation/Scrub/Transitional/Riparian-wetland/Grassland). Crops LEFT OUT so the faint sat carries the agricultural matrix (matches reference).
+- load_maps.py: renderer_natural_veg (Corine greens; Transitional = b_diagonal hatch; no outlines). Registered "Natural vegetation (land cover)".
+- 27_print_maps.py: habitat map repurposed to Corine land-cover look — natural_veg + saladas + water + reservoirs + urban(red) over PNOA ortho (opacity 0.45). Preview habitat_corine_preview.png ~ matches reference.
+- HANDOFF_TO_SONYA.md: how to package (zip 03_PROCESSED+07_SCRIPTS+00_ADMIN) + run load_maps.py on Windows (BASES already lists her path). Note: .qgz alone / git alone insufficient (absolute paths; data gitignored).

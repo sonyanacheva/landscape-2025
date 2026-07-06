@@ -429,6 +429,22 @@ def renderer_trails():
     return QgsSingleSymbolRenderer(QgsLineSymbol.createSimple(
         {"line_color": "140,110,80,170", "line_width": "0.12", "line_style": "dash", "capstyle": "round"}))
 
+def renderer_natural_veg():
+    # Habitat land-cover (Corine-style): natural veg only; crops = the faint sat underneath.
+    # Transitional woodland-shrub = diagonal hatch (colour lines, transparent between = sat shows).
+    def solid(c):    return QgsFillSymbol.createSimple({"color": c, "outline_style": "no"})
+    def hatch(c):    return QgsFillSymbol.createSimple({"style": "b_diagonal", "color": c, "outline_style": "no"})
+    CLASSES = [  # drawn bottom -> top; forest on top
+        ("Grassland / pasture",          solid("#CBD79A")),
+        ("Transitional woodland-shrub",  hatch("#8FA860")),
+        ("Scrub",                        solid("#9BAE68")),
+        ("Riparian / wetland",           solid("#4E9E86")),
+        ("Forest (plantation)",          solid("#6E9B5A")),
+        ("Forest",                       solid("#3E6B3A")),
+    ]
+    cats = [QgsRendererCategory(v, s, v) for v, s in CLASSES]
+    return QgsCategorizedSymbolRenderer("lc", cats)
+
 def renderer_countries():
     # §3.1 national backdrop — Spain highlighted, neighbours muted.
     es = QgsFillSymbol.createSimple({"color": "#EFE7D3", "outline_color": "#7A6A55", "outline_width": "0.2"})
@@ -510,6 +526,7 @@ MAPS = [
     {"file": "springs_che.fgb",        "name": "4.1 Springs (CHE)",              "group": "4.1 HYDROGRAPHY", "renderer": renderer_springs_che},
     {"file": "contours.fgb",           "name": "Contours (5 m)",                 "group": "4.2 GEOMORPHOLOGY", "renderer": renderer_contours},
     {"file": "trails_human.fgb",       "name": "4.4 Trails (OSM tracks/paths)",  "group": "4.4 HUMAN PRESSURE & BARRIERS", "renderer": renderer_trails},
+    {"file": "natural_veg.fgb",        "name": "Natural vegetation (land cover)","group": "5.1a HABITAT", "renderer": renderer_natural_veg},
 ]
 
 # ---- RASTERS (loaded + pseudocolour-styled; add one line per raster) ----------
@@ -526,12 +543,12 @@ RASTERS = [
      "colors": ["#54278f", "#9e9ac8", "#dadaeb"]},
     {"file": "corridor_wwf_swath_52.tif", "name": "5.2 WWF corridor zone",  "group": "5.2 RESISTANCE & CORRIDOR",
      "colors": ["#9e9ac8", "#cbc9e2", "#f2f0f7"], "vmin": 0, "vmax": 1500},
-    # Habitat classes (1-5) in green/blue so habitat reads; matrix/non-habitat (6-8) greyscale + recede.
-    {"file": "habitat_51a.tif",       "name": "5.1a Lynx + rabbit habitat", "group": "5.1a HABITAT", "categories": [
-        (1, "#2E7D32", "Lynx + rabbit optimal (ecotone)"), (2, "#3E8E9C", "Riparian corridor"),
-        (3, "#6FA96B", "Lynx cover (scrub/forest)"),       (4, "#B7D6A6", "Rabbit foraging (open)"),
-        (5, "#7FA8C9", "Wetland / salada"),                (6, "#ECECE8", "Matrix (permeable)"),
-        (7, "#D9D9D6", "Matrix (hostile)"),                (8, "#F5F5F3", "Non-habitat")]},
+    # Readable 4-class habitat; matrix/non-habitat = nodata (transparent) so habitat pops over the ortho.
+    {"file": "habitat_clean.tif",     "name": "5.1a Lynx + rabbit habitat", "group": "5.1a HABITAT", "categories": [
+        (1, "#1B7837", "Optimal — lynx + rabbit ecotone"),
+        (2, "#6FA96B", "Lynx cover (scrub / forest)"),
+        (3, "#C2914A", "Rabbit foraging (open)"),
+        (4, "#2E8B8B", "Riparian / wetland")]},
     # Dramatic relief for the hydrography map (only place it's used now): high contrast, near-opaque.
     {"file": "hillshade.tif",         "name": "Hillshade (backdrop)",       "group": "0 BASEMAP", "gray": True,
      "brightness": -10, "contrast": 55, "opacity": 0.9, "blend": "normal"},

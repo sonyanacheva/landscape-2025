@@ -254,3 +254,58 @@ _Living record. Newest entries at top. A fresh chat + this log ≈ full context.
 
 ### Next step
 - **Block A / de-CORINE:** Carlton downloads (1) SIGPAC Huesca recintos, (2) MFE Huesca, into `01_DATA/landcover/`. Then I read real `uso`/formation codes → build reclass → compute ha → styled 4.5 + 4.6 layers.
+
+## 5.2 Resistance — B&W hatch restyle (2026-07-05)
+- New `24_build_resistance_classes_52.py`: classifies `resistance_52.tif` into 5 bands, aggregates to 50 m blocks (majority vote; thin barriers preserved via ≥2 barrier cells/block), despeckles, polygonizes → `resistance_classes_52.fgb` (EPSG:25830, 5 MultiPolygons, valid).
+- Class shares: Very low 19.7% · Low 12.6% · Moderate 39.7% · High 24.5% · Very high/barrier 3.5% (true px barrier 2.75%).
+- `load_maps.py`: added `renderer_resistance_classes()` (categorized on `cls`, black Qt brush ramp light→dark = dense7·dense5·dense3·dense1·solid), registered `5.2 Resistance (B&W hatch)`, disabled the pseudocolour `resistance_52.tif` raster (commented, restorable).
+- Preview: `resistance_bw_preview.png`. Barriers render as continuous solid-black lines.
+
+## §3 context maps rebuilt WIDE — Step A (2026-07-05)
+- New `26_build_context_wide_3.py` → 7 nested-extent layers (no box clip): frames_extents (Spain/Region/Work/Box), reserves_espacios (71 named, region), natura2000_region (109), natura2000_national (1606, simplified), admin_provinces_region (Huesca/Zaragoza/Teruel), admin_comunidad_region (Aragón boundary), workzones_34b_draft (8, auto-numbered — Sonya to refine). All valid, EPSG:25830.
+- `load_maps.py`: added renderers (frames/reserves/natura_green/workzones/provinces_region/comunidad_region), registered 7 layers, new groups `3.2 REGION` + `3.4b WORK ZONES` in GROUP_ORDER.
+- `HOWTO_context_maps_themes.md`: 5 Map Themes (3.1/3.2/3.3/3.4a/3.4b) + layout-frame method so one project yields all 5 context maps without clipping to the box.
+- Preview: context_wide_preview.png. Decisions locked: region = Aragón+W.Catalunya; 3.4 = two maps; 3.1 basemap = official IGN (MDT200 + Redes de Transporte, Step B).
+- OUTSTANDING: Lleida/Catalunya province outline (small CNIG add); national relief+roads (task #40); Sonya refines workzones.
+
+## Map export script (2026-07-06)
+- New `27_print_maps.py` — run in QGIS after load_maps.py. Builds a throwaway print layout per map (uses QgsLayoutItemMap.setLayers, so the project/canvas is untouched), sets the nested extent, and adds title + pruned legend (furniture layers hidden) + km scale bar + Spain locator inset (red box via map overview, only for maps smaller than Spain). Exports PNG + PDF to 09_EXPORTS/. Edit the MAPS list to add/reorder maps; missing layers are skipped with a warning.
+
+## Maps 1-3 rework + habitats map + print layout (2026-07-06)
+- 28_build_map_variants.py: corridor_focus_3 (focus=1 for 97 Sierras-Litorales links near study area → blue; rest grey), admin_aragon, corridor_aragon/reserves_aragon/natura_aragon (clipped to Aragón for map 2).
+- 29_build_urban_habitat.py: urban_areas.fgb from agri_matrix_45 uso ZU+ED (Urban 1670 ha + Building 89 ha) — red on habitats map.
+- load_maps.py: renderer_corridor_focus (grey/blue), renderer_aragon_land, renderer_urban; habitat_51a recoloured (habitat green/blue, matrix+non-habitat greyscale); registered corridor_focus/admin_aragon/corridor_aragon/reserves_aragon/natura_aragon/urban_areas.
+- 27_print_maps.py: side-panel layout (map in own framed box; title+legend+scalebar+Spain locator in right column); on-map labels; maps reworked — 3.1 España (corridor grey/blue), 3.2 Aragón (clipped to Aragón, labels, nothing outside), 3.3 ámbito (+ water), 5.1a habitats (NO natura, urban red), + 3.4a/3.4b.
+- FIX: 26/28/29 now use BASES resolver (were hardcoded to sandbox path → failed in QGIS). Outputs already generated into repo.
+- OUTSTANDING: national autonomous-community borders for 3.1 (needs NE admin-1 / IGN grab).
+
+## Corrected Sierras Litorales corridor + Aragón map rework (2026-07-06)
+- The two uploaded corridor geojsons ("whole spain" + "sierras litorrales") are BYTE-IDENTICAL (211 links, 13,123 km, E-Spain). Used as the CORRECT Sierras Litorales corridor. The uploaded "Google Satelite style.qml" = greyscale/light raster style (saturation -100, brightness +87) for a satellite basemap.
+- 30_corridor_sierras_and_aragon.py: corridor_sierras.fgb (211, blue) + corridor_sierras_aragon.fgb (90, clipped) + mask_outside_aragon.fgb (white clip donut) + reserves_aragon.lbl flag (42 important = >20k ha OR within 30 km of study).
+- load_maps.py: corridor_3 → grey national network; corridor_sierras → blue (our corridor); admin_aragon → border-only (no land fill); + mask + Sierras-Aragón. Dropped corridor_focus_3 / corridor_aragon registrations.
+- 27_print_maps.py: per-map FRAME filter (subsetString) — Aragón shows only the work-area frame (big Region square removed); rule-based LABELS (lbl=1) for important reserves; Aragón stack = border + Sierras(Aragón) + reserves(labels) + natura + white mask + "Google Satellite" ortho (greyscale via user's .qml, clipped by mask).
+- TODO (user in QGIS): add a "Google Satellite" XYZ basemap + apply the .qml for the Aragón greyscale ortho; re-run load_maps.py then 27_print_maps.py.
+
+## Hillshade softening + real-width water shapes (2026-07-06)
+- Hillshade: load_maps gray block now StretchToMinMax + brightness +35 / contrast -25 + opacity 0.5 + Multiply blend → soft light terrain that shows THROUGH the land colours (was a harsh flat grey). Tunable via vmin/vmax/brightness/contrast/opacity/blend keys.
+- Water: Sonya's "habitat water owm.geojson" (8,620 OSM water polygons) → 31_build_water_polys.py → water_owm.fgb (7,901: water 4697, reservoir 2764, riverbank 440). Real-width SHAPES not lines. renderer_water_polys categorized on fclass: river/lake #B2CADC, reservoir #8FB0C9 (Sonya's palette). Registered "4.1 Water (real-width shapes)".
+- 27_print_maps.py: habitats + ámbito + Aragón maps now use the water shapes; hillshade reordered to multiply over the raster land base (crisp water/urban on top). Preview habitats_v2_preview.png ~ matches the reference habitat image.
+
+## Official CHE hydrography incorporated (Sonya's hydro.zip) (2026-07-06)
+- Raw → 01_DATA/hydro/che/. 32_build_hydro_che.py → 6 processed layers (EPSG:25830):
+  reservoirs_che (49), saladas (1227 salt lagoons), canals_poly (220 main channels), hydro_lines_che (1960, fclass river/canal/stream/drain + width), seasonal_drainage (5190 barrancos incl. Valcuerna; jerar hierarchy), springs_che (1018; clipped outliers from 1903).
+- load_maps.py: renderers — hydro_lines_che (width by class: river 0.7→drain 0.18), seasonal (dashed, scaled by jerar, #A1BBCF), saladas (#E0C6D0 salt-pink), reservoirs/canals/springs. Registered all 6 under 4.1 HYDROGRAPHY.
+- 27_print_maps.py: NEW "4_1_hidrografia" map (full set); work-area + habitats maps now use CHE water (width-scaled lines + seasonal barrancos + saladas + reservoirs) instead of the flat OSM water. water_owm kept for the Aragón-wide map (CHE only covers the eastern box area).
+- NOT used: "Minor artificial drainage" (6276 ditches) — too dense/noisy; raw kept in repo if a detailed irrigation map is wanted.
+
+## PNOA orthophoto backdrop (replaces ugly hillshade on work maps) (2026-07-06)
+- load_maps.py: ADD_PNOA_ORTHO flag auto-streams IGN PNOA-MA WMS (https://www.ign.es/wms-inspire/pnoa-ma, layer OI.OrthoimageCoverage) as "PNOA ortho (grey)" in 0 BASEMAP — greyscale (saturation -100) + brightness+20/contrast-25 + opacity 0.40. Needs internet; skips gracefully if unreachable.
+- 27_print_maps.py: 3.3, 3.4a, 3.4b now use "PNOA ortho (grey)" instead of hillshade; Aragón map switched from manual "Google Satellite" to the same auto PNOA. Hillshade still used on habitats (multiply over the raster) + 4.1.
+
+## PNOA ortho — true colour + off on 3.1/3.2 (2026-07-06)
+- load_maps.py now builds TWO WMS variants: "PNOA ortho" (TRUE COLOUR, opacity 0.20, brightness +60 — very faint/bright, work maps, visible) + "PNOA ortho (grey)" (greyscale, opacity 0.35, hidden by default, optional for habitats).
+- 27_print_maps.py: 3.3 / 3.4a / 3.4b use colour "PNOA ortho"; Aragón (3.2) ortho removed; Spain (3.1) never had it. Habitats + 4.1 keep the multiply hillshade (grey ortho is one-line swap if wanted).
+
+## Per-map ortho opacity + dramatic hillshade (2026-07-06)
+- 27_print_maps.py: new per-map `ortho_opacity` (temporarily sets the "PNOA ortho" layer opacity, restored after export). Habitats now uses faint colour ortho (0.20) in place of hillshade; 3.4a + 3.4b bumped to 0.55 (context-heavy, sparse data); 3.3 stays 0.20.
+- load_maps.py: hillshade config now DRAMATIC (brightness -10, contrast +55, opacity 0.9, blend normal) — only used on the 4.1 hydrography map now, so the relief reads strongly (was washing out).

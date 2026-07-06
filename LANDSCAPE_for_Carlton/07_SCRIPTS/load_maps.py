@@ -15,8 +15,9 @@ import os
 from qgis.core import (QgsVectorLayer, QgsProject, QgsCategorizedSymbolRenderer,
                        QgsRendererCategory, QgsFillSymbol, QgsLineSymbol, QgsMarkerSymbol,
                        QgsRasterLayer, QgsSingleBandPseudoColorRenderer, QgsRasterShader,
-                       QgsColorRampShader, QgsSingleSymbolRenderer)
-from qgis.PyQt.QtGui import QColor
+                       QgsColorRampShader, QgsSingleSymbolRenderer, QgsSingleBandGrayRenderer,
+                       QgsContrastEnhancement)
+from qgis.PyQt.QtGui import QColor, QPainter
 
 # --- config -------------------------------------------------------------------
 # Edit BASE once if the repo moves. Falls back to the saved .qgz project folder.
@@ -27,6 +28,7 @@ BASES = [
 ]
 PROCESSED_REL  = "03_PROCESSED"
 RESTYLE_LOADED = True   # re-apply styles to already-loaded layers on re-run (propagates edits)
+ADD_PNOA_ORTHO = True   # stream the IGN PNOA orthophoto (greyscale + dim) as a backdrop (needs internet)
 
 # =====================  PER-MAP STYLE BLOCKS (edit here)  ======================
 def renderer_agri():
@@ -306,12 +308,140 @@ def renderer_zonas_criticas():
         {"color": c, "outline_color": o, "outline_width": "0.3"}), v) for v, c, o in CLASSES]
     return QgsCategorizedSymbolRenderer("clase", cats)
 
+def renderer_frames():
+    # Nested extent frames — dashed, no fill; heavier line for the finer scales.
+    STYLES = [("Spain", "#B4B4B4", 0.2), ("Region", "#8A8A8A", 0.3),
+              ("Work-area", "#333333", 0.45), ("Study-box", "#111111", 0.5)]
+    cats = [QgsRendererCategory(v, QgsFillSymbol.createSimple(
+        {"style": "no", "outline_color": c, "outline_width": str(w), "outline_style": "dash"}), v)
+        for v, c, w in STYLES]
+    return QgsCategorizedSymbolRenderer("frame", cats)
+
+def renderer_reserves():
+    # §3.2/3.3 protected "espacios" (named reserves) — green fill; enable labels on SITE_NAME.
+    return QgsSingleSymbolRenderer(QgsFillSymbol.createSimple(
+        {"color": "120,180,110,90", "outline_color": "#4C7A3A", "outline_width": "0.2"}))
+
+def renderer_natura_green():
+    # §3.1/3.2 Natura 2000 (region/national) — single green fill (no 'tipo' attribute here).
+    return QgsSingleSymbolRenderer(QgsFillSymbol.createSimple(
+        {"color": "150,190,120,80", "outline_color": "#5C7A3A", "outline_width": "0.1"}))
+
+def renderer_workzones():
+    # §3.4b work-area sub-zones (DRAFT) — light fill; enable labels on zone_no / SITE_NAME.
+    return QgsSingleSymbolRenderer(QgsFillSymbol.createSimple(
+        {"color": "200,180,140,70", "outline_color": "#8A6D3B", "outline_width": "0.25"}))
+
+def renderer_provinces_region(): return _outline("#6D6875", 0.3)    # 3.2 province borders (region)
+def renderer_comunidad_region(): return _outline("#403A44", 0.6)    # 3.2 Aragón|Catalunya boundary
+
+def renderer_corridor_focus():
+    # §3.1 corridor network — grey where it doesn't concern us, BLUE for the Sierras-Litorales
+    # arc near/around the study area (focus = 1).
+    grey = QgsLineSymbol.createSimple({"line_color": "#B9B9B9", "line_width": "0.22", "capstyle": "round"})
+    blue = QgsLineSymbol.createSimple({"line_color": "#1F6FB2", "line_width": "0.9",  "capstyle": "round"})
+    cats = [QgsRendererCategory(0, grey, "Corridor network (other)"),
+            QgsRendererCategory(1, blue, "Sierras Litorales (our corridor)")]
+    return QgsCategorizedSymbolRenderer("focus", cats)
+
+def renderer_aragon_land():
+    # §3.2 Aragón — light land fill + visible border (map 2 base; nothing shown outside it).
+    return QgsSingleSymbolRenderer(QgsFillSymbol.createSimple(
+        {"color": "#F3EFE3", "outline_color": "#333333", "outline_width": "0.5"}))
+
+def renderer_urban():
+    # §5.1a urban footprints (SIGPAC ZU + ED) — signalled in RED on the habitats map.
+    return QgsSingleSymbolRenderer(QgsFillSymbol.createSimple(
+        {"color": "200,50,40,190", "outline_color": "#7E1A10", "outline_width": "0.12"}))
+
+def renderer_corridor_grey():
+    # §3.1 whole national corridor network — the ones we don't focus on (grey).
+    return QgsSingleSymbolRenderer(QgsLineSymbol.createSimple(
+        {"line_color": "#BEBEBE", "line_width": "0.2", "capstyle": "round"}))
+
+def renderer_corridor_sierras():
+    # §3.1 Sierras Litorales del Mediterráneo — OUR corridor (blue), corrected dataset from Sonya.
+    return QgsSingleSymbolRenderer(QgsLineSymbol.createSimple(
+        {"line_color": "#1F6FB2", "line_width": "0.9", "capstyle": "round"}))
+
+def renderer_aragon_border():
+    # §3.2 Aragón outline only (no land fill — greyscale orthophoto sits underneath).
+    return _outline("#333333", 0.5)
+
+def renderer_mask_white():
+    # §3.2 white donut = everything outside Aragón; clips the orthophoto to the region.
+    return QgsSingleSymbolRenderer(QgsFillSymbol.createSimple(
+        {"color": "255,255,255,255", "outline_style": "no"}))
+
+def renderer_water_polys():
+    # Real-width water SHAPES (OSM). Sonya's palette: light blue #B2CADC for river/lake,
+    # deeper blue-grey for embalses. Sized by true feature width — no fake-fat lines.
+    blue = QgsFillSymbol.createSimple({"color": "#B2CADC", "outline_color": "#7FA8C9", "outline_width": "0.06"})
+    resv = QgsFillSymbol.createSimple({"color": "#8FB0C9", "outline_color": "#6E93B0", "outline_width": "0.06"})
+    cats = [QgsRendererCategory("riverbank", blue.clone(), "River"),
+            QgsRendererCategory("water",     blue.clone(), "Water body"),
+            QgsRendererCategory("reservoir", resv,         "Reservoir (embalse)")]
+    return QgsCategorizedSymbolRenderer("fclass", cats)
+
+def renderer_hydro_lines_che():
+    # §4.1 official water lines — width scaled by class so big rivers read thick, streams thin.
+    STY = [("river", "#4E86C5", 0.7), ("canal", "#8FB0C9", 0.45),
+           ("stream", "#6E9BC0", 0.3), ("drain", "#A9C0D2", 0.18)]
+    cats = [QgsRendererCategory(v, QgsLineSymbol.createSimple(
+        {"line_color": c, "line_width": str(w), "capstyle": "round"}), v) for v, c, w in STY]
+    return QgsCategorizedSymbolRenderer("fclass", cats)
+
+def renderer_seasonal():
+    # §4.1 seasonal barrancos (incl. the dry Valcuerna) — dashed, thin, scaled by hierarchy.
+    STY = [("01", 0.5), ("02", 0.4), ("03", 0.26), ("04", 0.15)]
+    cats = [QgsRendererCategory(v, QgsLineSymbol.createSimple(
+        {"line_color": "#A1BBCF", "line_width": str(w), "line_style": "dash", "capstyle": "round"}),
+        f"Seasonal (order {v})") for v, w in STY]
+    return QgsCategorizedSymbolRenderer("jerar_0302", cats)
+
+def renderer_saladas():
+    # §4.1 saladas — Monegros salt lagoons; pale salt-pink to distinguish from freshwater.
+    return QgsSingleSymbolRenderer(QgsFillSymbol.createSimple(
+        {"color": "#E0C6D0", "outline_color": "#B98CA0", "outline_width": "0.1"}))
+
+def renderer_reservoirs_che():
+    return QgsSingleSymbolRenderer(QgsFillSymbol.createSimple(
+        {"color": "#8FB0C9", "outline_color": "#6E93B0", "outline_width": "0.08"}))
+
+def renderer_canals_poly():
+    # §4.1 main artificial channels — muted grey-blue (irrigation infrastructure).
+    return QgsSingleSymbolRenderer(QgsFillSymbol.createSimple(
+        {"color": "#9AAAB5", "outline_color": "#6F7F8A", "outline_width": "0.08"}))
+
+def renderer_springs_che():
+    return QgsSingleSymbolRenderer(QgsMarkerSymbol.createSimple(
+        {"name": "circle", "color": "#3E78B2", "outline_color": "#FFFFFF", "outline_width": "0.2", "size": "1.3"}))
+
 def renderer_countries():
     # §3.1 national backdrop — Spain highlighted, neighbours muted.
     es = QgsFillSymbol.createSimple({"color": "#EFE7D3", "outline_color": "#7A6A55", "outline_width": "0.2"})
     other = QgsFillSymbol.createSimple({"color": "#F2F2F0", "outline_color": "#C8C8C8", "outline_width": "0.12"})
     cats = [QgsRendererCategory("Spain", es, "Spain"), QgsRendererCategory("", other, "Neighbours")]
     return QgsCategorizedSymbolRenderer("ADMIN", cats)
+
+def renderer_resistance_classes():
+    # 5.2 resistance surface as BLACK-AND-WHITE hatching; denser hatch = more resistance.
+    # Brush ramp light->dark = low->high resistance (Qt fill styles):
+    #   dense7 (sparsest) -> dense5 -> dense3 -> dense1 -> solid (black barrier).
+    CLASSES = [
+        (1, "Very low (1-5) - permeable",  "dense7"),
+        (2, "Low (5-20)",                  "dense5"),
+        (3, "Moderate (20-40)",            "dense3"),
+        (4, "High (40-60)",                "dense1"),
+        (5, "Very high / barrier (>60)",   "solid"),
+    ]
+    cats = []
+    for v, lbl, brush in CLASSES:
+        sym = QgsFillSymbol.createSimple({
+            "color": "0,0,0,255", "style": brush,
+            "outline_color": "90,90,90,255", "outline_width": "0.05", "outline_style": "solid"})
+        cats.append(QgsRendererCategory(v, sym, lbl))
+    return QgsCategorizedSymbolRenderer("cls", cats)
 
 # =====================  REGISTRY (one line per map)  ==========================
 MAPS = [
@@ -332,6 +462,7 @@ MAPS = [
     {"file": "flood_43.fgb",         "name": "4.3 Flood zones (SNCZI)",        "group": "4.3 FLOW & EROSION",       "renderer": renderer_flood},
     {"file": "corridor_wwf_52.fgb",  "name": "5.2 WWF corridor (reference)",   "group": "5.2 RESISTANCE & CORRIDOR","renderer": renderer_wwf},
     {"file": "corridor_lcp_52.fgb",  "name": "5.2 Least-cost corridor",        "group": "5.2 RESISTANCE & CORRIDOR","renderer": renderer_lcp},
+    {"file": "resistance_classes_52.fgb","name": "5.2 Resistance (B&W hatch)",  "group": "5.2 RESISTANCE & CORRIDOR","renderer": renderer_resistance_classes},
     {"file": "viewpoints_51b.fgb",   "name": "5.1b Storyboard viewpoints",     "group": "5.1b STORYBOARD",          "renderer": renderer_viewpoints},
     {"file": "interventions_6a.fgb", "name": "6a Interventions (proposed)",    "group": "6a MASTERPLAN",            "renderer": renderer_interventions},
     {"file": "comunidades_3.fgb",    "name": "3.x Aragón boundary",            "group": "3.x ADMIN BOUNDARIES",    "renderer": renderer_comunidades},
@@ -339,8 +470,32 @@ MAPS = [
     {"file": "municipios_box_33.fgb","name": "3.3 Municipios (work area)",      "group": "3.x ADMIN BOUNDARIES",    "renderer": renderer_municipios},
     {"file": "towns_33.fgb",         "name": "3.3 Towns",                      "group": "3.x ADMIN BOUNDARIES",    "renderer": renderer_towns},
     {"file": "aos_frame.fgb",        "name": "Area of study frame",            "group": "FRAME (AOS)",              "renderer": renderer_aos_frame},
-    {"file": "corridor_3.fgb",       "name": "3.1 WWF priority corridors",     "group": "3.1 CONTEXT",              "renderer": renderer_corridor},
+    {"file": "corridor_3.fgb",       "name": "3.1 Corridor network (grey)",    "group": "3.1 CONTEXT",              "renderer": renderer_corridor_grey},
+    {"file": "corridor_sierras.fgb", "name": "3.1 Sierras Litorales corridor", "group": "3.1 CONTEXT",              "renderer": renderer_corridor_sierras},
     {"file": "zonas_criticas_34.fgb","name": "3.4 Critical zones (WWF)",       "group": "3.4 CRITICAL POINTS",      "renderer": renderer_zonas_criticas},
+    # --- §3 context rebuilt WIDE (nested extents; crop later via layout frame + Map Themes) ---
+    {"file": "frames_extents.fgb",       "name": "Nested extent frames",         "group": "FRAME (AOS)",         "renderer": renderer_frames},
+    {"file": "natura2000_national.fgb",  "name": "3.1 Natura 2000 (Spain)",      "group": "3.1 CONTEXT",         "renderer": renderer_natura_green},
+    {"file": "reserves_espacios.fgb",    "name": "3.2 Reserves / espacios (named)","group": "3.2 REGION",        "renderer": renderer_reserves},
+    {"file": "natura2000_region.fgb",    "name": "3.2 Natura 2000 (region)",     "group": "3.2 REGION",          "renderer": renderer_natura_green},
+    {"file": "admin_comunidad_region.fgb","name": "3.2 Aragón boundary (region)", "group": "3.x ADMIN BOUNDARIES","renderer": renderer_comunidad_region},
+    {"file": "admin_provinces_region.fgb","name": "3.2 Provinces (region)",      "group": "3.x ADMIN BOUNDARIES","renderer": renderer_provinces_region},
+    {"file": "workzones_34b_draft.fgb",  "name": "3.4b Work-area sub-zones (draft)","group": "3.4b WORK ZONES",  "renderer": renderer_workzones},
+    # --- map 2 (Aragón): border-only + clip mask + Aragón-clipped reserves/natura ---
+    {"file": "admin_aragon.fgb",       "name": "3.2 Aragón (border only)",       "group": "3.2 REGION",   "renderer": renderer_aragon_border},
+    {"file": "mask_outside_aragon.fgb","name": "3.2 Aragón clip mask (white)",   "group": "3.2 REGION",   "renderer": renderer_mask_white},
+    {"file": "reserves_aragon.fgb",    "name": "3.2 Reserves (Aragón)",          "group": "3.2 REGION",   "renderer": renderer_reserves},
+    {"file": "natura_aragon.fgb",      "name": "3.2 Natura 2000 (Aragón)",       "group": "3.2 REGION",   "renderer": renderer_natura_green},
+    {"file": "corridor_sierras_aragon.fgb","name": "3.2 Sierras corridor (Aragón)","group": "3.2 REGION",  "renderer": renderer_corridor_sierras},
+    {"file": "urban_areas.fgb",        "name": "5.1a Urban areas (red)",         "group": "5.1a HABITAT", "renderer": renderer_urban},
+    {"file": "water_owm.fgb",          "name": "4.1 Water (real-width shapes)",  "group": "4.1 HYDROGRAPHY", "renderer": renderer_water_polys},
+    # --- richer official (CHE) hydrography from Sonya's hydro.zip ---
+    {"file": "saladas.fgb",            "name": "4.1 Saladas (salt lagoons)",     "group": "4.1 HYDROGRAPHY", "renderer": renderer_saladas},
+    {"file": "reservoirs_che.fgb",     "name": "4.1 Reservoirs (embalses)",      "group": "4.1 HYDROGRAPHY", "renderer": renderer_reservoirs_che},
+    {"file": "canals_poly.fgb",        "name": "4.1 Main channels (canals)",     "group": "4.1 HYDROGRAPHY", "renderer": renderer_canals_poly},
+    {"file": "hydro_lines_che.fgb",    "name": "4.1 Water lines (by class)",     "group": "4.1 HYDROGRAPHY", "renderer": renderer_hydro_lines_che},
+    {"file": "seasonal_drainage.fgb",  "name": "4.1 Seasonal barrancos",         "group": "4.1 HYDROGRAPHY", "renderer": renderer_seasonal},
+    {"file": "springs_che.fgb",        "name": "4.1 Springs (CHE)",              "group": "4.1 HYDROGRAPHY", "renderer": renderer_springs_che},
 ]
 
 # ---- RASTERS (loaded + pseudocolour-styled; add one line per raster) ----------
@@ -349,28 +504,33 @@ RASTERS = [
      "colors": ["#f7fcf0", "#c7e9b4", "#fed976", "#fd8d3c", "#bd0026"]},
     {"file": "flowacc_43.tif",        "name": "4.3 Flow accumulation",      "group": "4.3 FLOW & EROSION",
      "colors": ["#f7fbff", "#c6dbef", "#6baed6", "#2171b5", "#08306b"]},
-    {"file": "resistance_52.tif",     "name": "5.2 Resistance surface",     "group": "5.2 RESISTANCE & CORRIDOR",
-     "colors": ["#1a9850", "#a6d96a", "#ffffbf", "#fdae61", "#d73027"], "vmin": 1, "vmax": 80},
+    # 5.2 resistance now shown as B&W hatch VECTOR (resistance_classes_52.fgb, see MAPS).
+    # Colour raster kept here but disabled; uncomment to restore the pseudocolour version.
+    # {"file": "resistance_52.tif",     "name": "5.2 Resistance surface",     "group": "5.2 RESISTANCE & CORRIDOR",
+    #  "colors": ["#1a9850", "#a6d96a", "#ffffbf", "#fdae61", "#d73027"], "vmin": 1, "vmax": 80},
     {"file": "corridor_swath_52.tif", "name": "5.2 Corridor swath",         "group": "5.2 RESISTANCE & CORRIDOR",
      "colors": ["#54278f", "#9e9ac8", "#dadaeb"]},
     {"file": "corridor_wwf_swath_52.tif", "name": "5.2 WWF corridor zone",  "group": "5.2 RESISTANCE & CORRIDOR",
      "colors": ["#9e9ac8", "#cbc9e2", "#f2f0f7"], "vmin": 0, "vmax": 1500},
+    # Habitat classes (1-5) in green/blue so habitat reads; matrix/non-habitat (6-8) greyscale + recede.
     {"file": "habitat_51a.tif",       "name": "5.1a Lynx + rabbit habitat", "group": "5.1a HABITAT", "categories": [
-        (1, "#238B45", "Lynx + rabbit optimal (ecotone)"), (2, "#00A0A0", "Riparian corridor"),
-        (3, "#74C476", "Lynx cover (scrub/forest)"),       (4, "#C7E9C0", "Rabbit foraging (open)"),
-        (5, "#7EA6C4", "Wetland / salada"),                (6, "#F0EAD2", "Matrix (permeable)"),
-        (7, "#E6C2B3", "Matrix (hostile)"),                (8, "#E8E8E8", "Non-habitat")]},
-    {"file": "hillshade.tif",         "name": "Hillshade (backdrop)",       "group": "0 BASEMAP", "gray": True},
+        (1, "#2E7D32", "Lynx + rabbit optimal (ecotone)"), (2, "#3E8E9C", "Riparian corridor"),
+        (3, "#6FA96B", "Lynx cover (scrub/forest)"),       (4, "#B7D6A6", "Rabbit foraging (open)"),
+        (5, "#7FA8C9", "Wetland / salada"),                (6, "#ECECE8", "Matrix (permeable)"),
+        (7, "#D9D9D6", "Matrix (hostile)"),                (8, "#F5F5F3", "Non-habitat")]},
+    # Dramatic relief for the hydrography map (only place it's used now): high contrast, near-opaque.
+    {"file": "hillshade.tif",         "name": "Hillshade (backdrop)",       "group": "0 BASEMAP", "gray": True,
+     "brightness": -10, "contrast": 55, "opacity": 0.9, "blend": "normal"},
 ]
 
 # Layer-tree group order, TOP → BOTTOM (subject/points up, fills down, basemap at the bottom).
 GROUP_ORDER = [
     "FRAME (AOS)",
     "5.1b STORYBOARD", "6a MASTERPLAN", "5.2 RESISTANCE & CORRIDOR", "5.1a HABITAT",
-    "3.4 CRITICAL POINTS", "4.4 HUMAN PRESSURE & BARRIERS", "4.x CAÑADAS",
+    "3.4b WORK ZONES", "3.4 CRITICAL POINTS", "4.4 HUMAN PRESSURE & BARRIERS", "4.x CAÑADAS",
     "4.3 FLOW & EROSION", "4.1 HYDROGRAPHY", "3.3 NATURA 2000",
     "4.6 FOREST & NATURAL VEG", "4.5 AGRICULTURAL MATRIX", "4.2 GEOMORPHOLOGY",
-    "3.x ADMIN BOUNDARIES", "3.1 CONTEXT", "0 BASEMAP",
+    "3.2 REGION", "3.x ADMIN BOUNDARIES", "3.1 CONTEXT", "0 BASEMAP",
 ]
 
 # =====================  ORCHESTRATOR (stable; no need to edit)  ================
@@ -448,10 +608,25 @@ def run():
             rl = QgsRasterLayer(path, r["name"])
             if not rl.isValid():
                 print("FAIL (invalid raster):", path); continue
-            if r.get("gray"):                                 # grayscale backdrop (hillshade) — default gray render
+            if r.get("gray"):                                 # hillshade — soft, light, multiply-blended
+                prov = rl.dataProvider()
+                gr = QgsSingleBandGrayRenderer(prov, 1)
+                st = prov.bandStatistics(1)
+                ce = QgsContrastEnhancement(prov.dataType(1))
+                ce.setContrastEnhancementAlgorithm(QgsContrastEnhancement.StretchToMinimumMaximum)
+                ce.setMinimumValue(r.get("vmin", st.minimumValue))
+                ce.setMaximumValue(r.get("vmax", st.maximumValue))
+                gr.setContrastEnhancement(ce)
+                rl.setRenderer(gr)
+                bcf = rl.brightnessFilter()                   # lift + flatten so it's not a harsh grey
+                bcf.setBrightness(r.get("brightness", 35)); bcf.setContrast(r.get("contrast", -25))
+                rl.setOpacity(r.get("opacity", 0.5))
+                if r.get("blend", "multiply") == "multiply":  # relief shows THROUGH the land colours
+                    rl.setBlendMode(QPainter.CompositionMode_Multiply)
+                rl.triggerRepaint()
                 QgsProject.instance().addMapLayer(rl, False)
                 grp = root.findGroup(r["group"]) or root.insertGroup(0, r["group"])
-                grp.addLayer(rl); print("LOADED raster (gray):", r["name"]); continue
+                grp.addLayer(rl); print("LOADED raster (hillshade soft):", r["name"]); continue
             shader = QgsRasterShader(); ramp = QgsColorRampShader()
             if "categories" in r:                             # discrete categorical raster
                 items = [QgsColorRampShader.ColorRampItem(v, QColor(c), lab)
@@ -474,6 +649,36 @@ def run():
             print("LOADED raster:", r["name"])
         except Exception as e:
             print("raster style failed for", r["name"], "->", e)
+
+    # IGN PNOA orthophoto (WMS) — faint backdrop for the work-area maps. Two variants:
+    #   "PNOA ortho"        : TRUE COLOUR, very low opacity + high brightness (work maps)
+    #   "PNOA ortho (grey)" : greyscale (kept hidden; optional for the habitats map)
+    if ADD_PNOA_ORTHO:
+        uri = ("crs=EPSG:25830&dpiMode=7&format=image/jpeg&"
+               "layers=OI.OrthoimageCoverage&styles&url=https://www.ign.es/wms-inspire/pnoa-ma")
+        # (name, greyscale?, opacity, brightness, contrast, visible-by-default?)
+        DEFS = [("PNOA ortho",        False, 0.20, 60, -5,  True),
+                ("PNOA ortho (grey)", True,  0.35, 20, -25, False)]
+        grp = root.findGroup("0 BASEMAP") or root.insertGroup(0, "0 BASEMAP")
+        for nm, grey, op, br, ct, vis in DEFS:
+            try:
+                old = next((l for l in QgsProject.instance().mapLayers().values() if l.name() == nm), None)
+                if old:
+                    QgsProject.instance().removeMapLayer(old.id())
+                wl = QgsRasterLayer(uri, nm, "wms")
+                if not wl.isValid():
+                    print("PNOA WMS not reachable — skipped '%s' (check internet)." % nm); continue
+                if grey:
+                    wl.hueSaturationFilter().setSaturation(-100)
+                bcf = wl.brightnessFilter(); bcf.setBrightness(br); bcf.setContrast(ct)
+                wl.setOpacity(op)
+                QgsProject.instance().addMapLayer(wl, False)
+                node = grp.addLayer(wl)
+                if node is not None:
+                    node.setItemVisibilityChecked(vis)
+                print("LOADED", nm)
+            except Exception as e:
+                print("PNOA WMS add failed for", nm, "->", e)
 
     # order the groups top→bottom per GROUP_ORDER (basemap ends at the bottom)
     for name in reversed(GROUP_ORDER):
